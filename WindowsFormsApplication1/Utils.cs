@@ -1,10 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using Microsoft.VisualBasic.FileIO;
+using System;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace WindowsFormsApplication1
@@ -13,8 +11,7 @@ namespace WindowsFormsApplication1
     {
         [DllImport("user32.dll")]
         static extern int GetWindowText(IntPtr hWnd, StringBuilder text, int count);
-
-
+        
         public static long millisecondsSinceEpoch()
         {
             return (long)(DateTime.UtcNow - new DateTime(1970, 1, 1)).TotalMilliseconds;

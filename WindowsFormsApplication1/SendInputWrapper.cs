@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using WindowsInput;
+using InputTypes = WindowsFormsApplication1.TripletteList<WindowsInput.VirtualKeyCode, WindowsFormsApplication1.ScanCodeShort, string>;
 
 namespace WindowsFormsApplication1
 {
@@ -57,75 +58,61 @@ namespace WindowsFormsApplication1
 
 
 
-        private static ScanCodeShort GetScanCode(VirtualKeyCode key)
-        {
-            switch (key)
-            {
-                case VirtualKeyCode.RETURN:
-                    return ScanCodeShort.RETURN;
-                case VirtualKeyCode.VK_A:
-                    return ScanCodeShort.KEY_A;
-                case VirtualKeyCode.VK_B:
-                    return ScanCodeShort.KEY_B;
-                case VirtualKeyCode.VK_C:
-                    return ScanCodeShort.KEY_C;
-                case VirtualKeyCode.VK_D:
-                    return ScanCodeShort.KEY_D;
-                case VirtualKeyCode.VK_E:
-                    return ScanCodeShort.KEY_E;
-                case VirtualKeyCode.VK_F:
-                    return ScanCodeShort.KEY_F;
-                case VirtualKeyCode.VK_G:
-                    return ScanCodeShort.KEY_G;
-                case VirtualKeyCode.VK_H:
-                    return ScanCodeShort.KEY_H;
-                case VirtualKeyCode.VK_I:
-                    return ScanCodeShort.KEY_I;
-                case VirtualKeyCode.VK_J:
-                    return ScanCodeShort.KEY_J;
-                case VirtualKeyCode.VK_K:
-                    return ScanCodeShort.KEY_K;
-                case VirtualKeyCode.VK_L:
-                    return ScanCodeShort.KEY_L;
-                case VirtualKeyCode.VK_M:
-                    return ScanCodeShort.KEY_M;
-                case VirtualKeyCode.VK_N:
-                    return ScanCodeShort.KEY_N;
-                case VirtualKeyCode.VK_O:
-                    return ScanCodeShort.KEY_O;
-                case VirtualKeyCode.VK_P:
-                    return ScanCodeShort.KEY_P;
-                case VirtualKeyCode.VK_Q:
-                    return ScanCodeShort.KEY_Q;
-                case VirtualKeyCode.VK_R:
-                    return ScanCodeShort.KEY_R;
-                case VirtualKeyCode.VK_S:
-                    return ScanCodeShort.KEY_S;
-                case VirtualKeyCode.VK_T:
-                    return ScanCodeShort.KEY_T;
-                case VirtualKeyCode.VK_U:
-                    return ScanCodeShort.KEY_U;
-                case VirtualKeyCode.VK_V:
-                    return ScanCodeShort.KEY_V;
-                case VirtualKeyCode.VK_W:
-                    return ScanCodeShort.KEY_W;
-                case VirtualKeyCode.VK_X:
-                    return ScanCodeShort.KEY_X;
-                case VirtualKeyCode.VK_Y:
-                    return ScanCodeShort.KEY_Y;
-                case VirtualKeyCode.VK_Z:
-                    return ScanCodeShort.KEY_Z;
-                case VirtualKeyCode.UP:
-                    return ScanCodeShort.UP;
-                case VirtualKeyCode.DOWN:
-                    return ScanCodeShort.DOWN;
-                case VirtualKeyCode.LEFT:
-                    return ScanCodeShort.LEFT;
-                case VirtualKeyCode.RIGHT:
-                    return ScanCodeShort.RIGHT;
-                default:
-                    return ScanCodeShort.NONAME;
+        private static InputTypes _inputTypes;
+
+        public static InputTypes InputTypes() {
+            if (_inputTypes == null) {
+                _inputTypes = new InputTypes();
+                _inputTypes.Add(VirtualKeyCode.SPACE,   ScanCodeShort.SPACE, "SPACE");
+                _inputTypes.Add(VirtualKeyCode.RETURN,  ScanCodeShort.RETURN,   "RETURN");
+
+                _inputTypes.Add(VirtualKeyCode.VK_A,    ScanCodeShort.KEY_A,    "A");
+                _inputTypes.Add(VirtualKeyCode.VK_B,    ScanCodeShort.KEY_B,    "B");
+                _inputTypes.Add(VirtualKeyCode.VK_C,    ScanCodeShort.KEY_C,    "C");
+                _inputTypes.Add(VirtualKeyCode.VK_D,    ScanCodeShort.KEY_D,    "D");
+                _inputTypes.Add(VirtualKeyCode.VK_E,    ScanCodeShort.KEY_E,    "E");
+                _inputTypes.Add(VirtualKeyCode.VK_F,    ScanCodeShort.KEY_F,    "F");
+                _inputTypes.Add(VirtualKeyCode.VK_G,    ScanCodeShort.KEY_G,    "G");
+                _inputTypes.Add(VirtualKeyCode.VK_H,    ScanCodeShort.KEY_H,    "H");
+                _inputTypes.Add(VirtualKeyCode.VK_I,    ScanCodeShort.KEY_I,    "I");
+                _inputTypes.Add(VirtualKeyCode.VK_J,    ScanCodeShort.KEY_J,    "J");
+                _inputTypes.Add(VirtualKeyCode.VK_K,    ScanCodeShort.KEY_K,    "K");
+                _inputTypes.Add(VirtualKeyCode.VK_L,    ScanCodeShort.KEY_L,    "L");
+                _inputTypes.Add(VirtualKeyCode.VK_M,    ScanCodeShort.KEY_M,    "M");
+                _inputTypes.Add(VirtualKeyCode.VK_N,    ScanCodeShort.KEY_N,    "N");
+                _inputTypes.Add(VirtualKeyCode.VK_O,    ScanCodeShort.KEY_O,    "O");
+                _inputTypes.Add(VirtualKeyCode.VK_P,    ScanCodeShort.KEY_P,    "P");
+                _inputTypes.Add(VirtualKeyCode.VK_Q,    ScanCodeShort.KEY_Q,    "Q");
+                _inputTypes.Add(VirtualKeyCode.VK_R,    ScanCodeShort.KEY_R,    "R");
+                _inputTypes.Add(VirtualKeyCode.VK_S,    ScanCodeShort.KEY_S,    "S");
+                _inputTypes.Add(VirtualKeyCode.VK_T,    ScanCodeShort.KEY_T,    "T");
+                _inputTypes.Add(VirtualKeyCode.VK_U,    ScanCodeShort.KEY_U,    "U");
+                _inputTypes.Add(VirtualKeyCode.VK_V,    ScanCodeShort.KEY_V,    "V");
+                _inputTypes.Add(VirtualKeyCode.VK_W,    ScanCodeShort.KEY_W,    "W");
+                _inputTypes.Add(VirtualKeyCode.VK_X,    ScanCodeShort.KEY_X,    "X");
+                _inputTypes.Add(VirtualKeyCode.VK_Y,    ScanCodeShort.KEY_Y,    "Y");
+                _inputTypes.Add(VirtualKeyCode.VK_Z,    ScanCodeShort.KEY_Z,    "Z");
+
+                _inputTypes.Add(VirtualKeyCode.UP,      ScanCodeShort.UP,       "UP");
+                _inputTypes.Add(VirtualKeyCode.DOWN,    ScanCodeShort.DOWN,     "DOWN");
+                _inputTypes.Add(VirtualKeyCode.LEFT,    ScanCodeShort.LEFT,     "LEFT");
+                _inputTypes.Add(VirtualKeyCode.RIGHT,   ScanCodeShort.RIGHT,    "RIGHT");
+
+
             }
+            return _inputTypes;
+        }
+
+
+
+        public static ScanCodeShort GetScanCode(VirtualKeyCode key)
+        {
+            return InputTypes().Get(key).Second;
+        }
+
+        public static VirtualKeyCode GetVKeyCode(String key)
+        {
+            return InputTypes().Get(key).First;
         }
 
     }

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.VisualBasic.FileIO;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -37,20 +38,11 @@ namespace WindowsFormsApplication1
         public const string LEFT    = "⇦";
         public const string NONE    = "NONE";
 
-        protected InputBoard()
+        protected InputBoard(string FilePath)
         {
-            keys.Add(START, VirtualKeyCode.RETURN);
-            keys.Add(SELECT, VirtualKeyCode.VK_Z);
-            keys.Add(UP, VirtualKeyCode.UP);
-            keys.Add(DOWN, VirtualKeyCode.DOWN);
-            keys.Add(RIGHT, VirtualKeyCode.RIGHT);
-            keys.Add(LEFT, VirtualKeyCode.LEFT);
-            keys.Add(NONE, VirtualKeyCode.NONAME);
 
-            setLeft(UP);
-            setLeft(DOWN);
-            setLeft(RIGHT);
-            setLeft(LEFT);
+            LoadFrom(FilePath);
+
         }
 
         public void Enable(string value) {
@@ -236,11 +228,6 @@ namespace WindowsFormsApplication1
 
         }
 
-        internal StartAnArcadeBehavior getBehaviorOfType(StartAnArcadeBehavior startAnArcadeBehavior)
-        {
-            throw new NotImplementedException();
-        }
-
         public T getBehaviorOfType<T>() where T : Behavior
         {
             foreach (Behavior b in behaviors) {
@@ -258,16 +245,95 @@ namespace WindowsFormsApplication1
                     
             return true;
         }
-        
+
+        private void LoadFrom(string FilePath)
+        {
+            using (TextFieldParser parser = new TextFieldParser(FilePath))
+            {
+                parser.TextFieldType = FieldType.Delimited;
+                parser.SetDelimiters("_");
+
+                string Mapping = "MappingMode";
+                string Combos = "ComboMode";
+                string Mode = Mapping;
+
+                while (!parser.EndOfData)
+                {
+                    string[] fields = parser.ReadFields();
+                    foreach (string raw in fields)
+                    {
+                        string field = raw.Trim().ToUpper();
+                        
+                        if (field.StartsWith(",")) continue;
+                        if (field.StartsWith(";")) continue;
+                        if (field.StartsWith("//")) continue;
+
+                        if (field.StartsWith(">")) {
+                            if (field.Contains("MAPPING"))
+                                Mode = Mapping;
+                            if (field.Contains("COMBO"))
+                                Mode = Combos;
+
+                            continue;
+                        }
+
+
+                        if (Mode == Mapping) {
+                            string[] splits = field.Split(',');
+                            if (splits.Length >= 4) {
+                                string strVKey = splits[1].ToUpper().Trim();
+                                string strHand = splits[2].ToUpper().Trim();
+                                string display = splits[3].ToUpper().Trim();
+
+                                keys.Add(display, SendInputWrapper.GetVKeyCode(strVKey));
+
+                                switch(strHand)
+                                {
+                                    case "LEFT":
+                                        setLeft(display);
+                                        break;
+                                    case "RIGHT":
+                                        setRight(display);
+                                        break;
+                                    default:
+                                        setLeft(display);
+                                        setRight(display);
+                                        break;
+                                }
+                            }
+                        }
+
+                        if (Mode == Combos)
+                        {
+                            string[] splits = field.Split(',');
+                            splits = splits.Where(x => !string.IsNullOrEmpty(x)).ToArray();
+                            if (splits.Length > 0)
+                            {
+                                AddCombo(splits);
+                            }
+                        }
+
+
+
+                    }
+                }
+            }
+
+            EnableEverything();
+            setAnyOtherKeyAsJolly();
+            setAnyKeyAsCombo();
+
+        }
+
     }
 
-    class GBInputBoard : InputBoard
+    /*class GBInputBoard : InputBoard
     {
 
         public const string A = "A";
         public const string B = "B";
 
-        public GBInputBoard() : base()
+        public GBInputBoard(string FilePath) : base()
         {
             keys.Add(A, VirtualKeyCode.VK_S);
             keys.Add(B, VirtualKeyCode.VK_A);
@@ -284,7 +350,7 @@ namespace WindowsFormsApplication1
         {
             Press(A, 150, 150);
         }
-    }
+    }*/
 
     class PSXInputBoard : InputBoard
     {
@@ -294,44 +360,49 @@ namespace WindowsFormsApplication1
         public const string SQUARE = "☐";
         public const string TRIANGLE = "△";
 
-        public PSXInputBoard() : base()
-        {
-            keys.Add(CROSS, VirtualKeyCode.VK_V);
-            keys.Add(CIRCLE, VirtualKeyCode.VK_X);
-            keys.Add(TRIANGLE, VirtualKeyCode.VK_D);
-            keys.Add(SQUARE, VirtualKeyCode.VK_S);
+        public PSXInputBoard(string FilePath) : base(FilePath) {}
 
-            setRight(CROSS);
-            setRight(CIRCLE);
-            setRight(TRIANGLE);
-            setRight(SQUARE);
-
-            EnableEverything();
-            setAnyOtherKeyAsJolly();
-            setAnyKeyAsCombo();
+        /* public PSXInputBoard() : base()
+         {
 
 
-            // Set combos
-            // LEFT
-            AddCombo(UP, RIGHT);
-            AddCombo(DOWN, RIGHT);
-            AddCombo(UP, LEFT);
-            AddCombo(DOWN, LEFT);
 
-            //RIGHT x2
-            AddCombo(CROSS, SQUARE);
-            AddCombo(CROSS, TRIANGLE);
-            AddCombo(CROSS, CIRCLE);
-            AddCombo(CIRCLE, SQUARE);
-            AddCombo(CIRCLE, TRIANGLE);
-            AddCombo(SQUARE, TRIANGLE);
+             keys.Add(CROSS, VirtualKeyCode.VK_V);
+             keys.Add(CIRCLE, VirtualKeyCode.VK_X);
+             keys.Add(TRIANGLE, VirtualKeyCode.VK_D);
+             keys.Add(SQUARE, VirtualKeyCode.VK_S);
 
-            //RIGHT x3
-            AddCombo(SQUARE, TRIANGLE, CROSS);
-            AddCombo(SQUARE, TRIANGLE, CIRCLE);
-            AddCombo(SQUARE, CIRCLE, CROSS);
-            AddCombo(CIRCLE, TRIANGLE, CROSS);
-        }
+             setRight(CROSS);
+             setRight(CIRCLE);
+             setRight(TRIANGLE);
+             setRight(SQUARE);
+
+             EnableEverything();
+             setAnyOtherKeyAsJolly();
+             setAnyKeyAsCombo();
+
+
+             // Set combos
+             // LEFT
+             AddCombo(UP, RIGHT);
+             AddCombo(DOWN, RIGHT);
+             AddCombo(UP, LEFT);
+             AddCombo(DOWN, LEFT);
+
+             //RIGHT x2
+             AddCombo(CROSS, SQUARE);
+             AddCombo(CROSS, TRIANGLE);
+             AddCombo(CROSS, CIRCLE);
+             AddCombo(CIRCLE, SQUARE);
+             AddCombo(CIRCLE, TRIANGLE);
+             AddCombo(SQUARE, TRIANGLE);
+
+             //RIGHT x3
+             AddCombo(SQUARE, TRIANGLE, CROSS);
+             AddCombo(SQUARE, TRIANGLE, CIRCLE);
+             AddCombo(SQUARE, CIRCLE, CROSS);
+             AddCombo(CIRCLE, TRIANGLE, CROSS);
+         }*/
 
         public override void PressConfirm()
         {

@@ -32,7 +32,7 @@ namespace WindowsFormsApplication1
 
         private string EmuWindowTitle;
         private int OriginalLeftInputLabelWidth;
-        private InputBoard inputBoard = new PSXInputBoard();
+        private InputBoard inputBoard = new PSXInputBoard("C:\\Users\\simc\\Desktop\\The Bullet Hell Fish\\Input Sheets\\PSX Input Sheet.csv");
         
         private Thread leftHandThread;
         private Thread rightHandThread;
