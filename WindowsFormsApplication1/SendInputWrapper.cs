@@ -93,6 +93,17 @@ namespace WindowsFormsApplication1
                 _inputTypes.Add(VirtualKeyCode.VK_Y,    ScanCodeShort.KEY_Y,    "Y");
                 _inputTypes.Add(VirtualKeyCode.VK_Z,    ScanCodeShort.KEY_Z,    "Z");
 
+                _inputTypes.Add(VirtualKeyCode.VK_0,    ScanCodeShort.KEY_0,    "0");
+                _inputTypes.Add(VirtualKeyCode.VK_1,    ScanCodeShort.KEY_1,    "1");
+                _inputTypes.Add(VirtualKeyCode.VK_2,    ScanCodeShort.KEY_2,    "2");
+                _inputTypes.Add(VirtualKeyCode.VK_3,    ScanCodeShort.KEY_3,    "3");
+                _inputTypes.Add(VirtualKeyCode.VK_4,    ScanCodeShort.KEY_4,    "4");
+                _inputTypes.Add(VirtualKeyCode.VK_5,    ScanCodeShort.KEY_5,    "5");
+                _inputTypes.Add(VirtualKeyCode.VK_6,    ScanCodeShort.KEY_6,    "6");
+                _inputTypes.Add(VirtualKeyCode.VK_7,    ScanCodeShort.KEY_7,    "7");
+                _inputTypes.Add(VirtualKeyCode.VK_8,    ScanCodeShort.KEY_8,     "8");
+                _inputTypes.Add(VirtualKeyCode.VK_9,    ScanCodeShort.KEY_9,    "9");
+
                 _inputTypes.Add(VirtualKeyCode.UP,      ScanCodeShort.UP,       "UP");
                 _inputTypes.Add(VirtualKeyCode.DOWN,    ScanCodeShort.DOWN,     "DOWN");
                 _inputTypes.Add(VirtualKeyCode.LEFT,    ScanCodeShort.LEFT,     "LEFT");

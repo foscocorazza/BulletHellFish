@@ -12,6 +12,7 @@ namespace WindowsFormsApplication1
         protected InputBoard inputBoard;
         protected int tick = 0;
         protected int waitCycle = 0;
+        private static bool locked = false;
 
         protected Behavior(int waitCycle)
         {
@@ -30,6 +31,21 @@ namespace WindowsFormsApplication1
             }
             return true;
 
+        }
+
+        protected static void Lock()
+        {
+            locked = true;
+        }
+
+        protected static void Unlock()
+        {
+            locked = false;
+        }
+
+        public static bool IsLocked()
+        {
+            return locked;
         }
 
         internal void SetInputBoard(InputBoard inputBoard)
@@ -59,19 +75,21 @@ namespace WindowsFormsApplication1
         }
     }
 
-    public class PressStartToContinueBehavior : Behavior
+    public class PressStartToContinueTekkenIIIBehavior : Behavior
     {
         protected IntPtr emuHandle;
         private bool lastFrameWasContinue = false;
         public int Continues = 0;
 
-        public PressStartToContinueBehavior(IntPtr emuHandle) : base(0)
+        public PressStartToContinueTekkenIIIBehavior(IntPtr emuHandle) : base(0)
         {
             this.emuHandle = emuHandle;
         }
 
-        public override bool behave()
+        public override bool behave() 
         {
+            if (IsLocked()) return false;
+
             if (ScreenshotManager.ThisScreenPresent("continue_screen.jpg", emuHandle, new System.Drawing.Rectangle( 117 , 229 , 343 , 35)))
             {
                 if (!lastFrameWasContinue) {
@@ -82,6 +100,48 @@ namespace WindowsFormsApplication1
                 return true;
             }
             lastFrameWasContinue = false;
+            return false;
+        }
+    }
+
+
+    public class PressStartToContinueSoulcaliburIIIBehavior : Behavior
+    {
+        protected IntPtr emuHandle;
+        private bool lastFrameBehaved = false;
+        public int Continues = 0;
+
+        public PressStartToContinueSoulcaliburIIIBehavior(IntPtr emuHandle) : base(0)
+        {
+            this.emuHandle = emuHandle;
+        }
+
+        public override bool behave()
+        {
+            if (IsLocked()) return false;
+
+            if (ScreenshotManager.ThisScreenPresent("victory_screen.jpg", emuHandle, new System.Drawing.Rectangle(77, 620, 1253, 116)))
+            {
+
+                Lock();
+
+                if (!lastFrameBehaved)
+                {
+                    Continues++;
+                }
+
+                inputBoard.PressStart();
+
+                Thread.Sleep(1000);
+
+                inputBoard.Press("X", 200, 200);
+
+                Unlock();
+
+                lastFrameBehaved = true;
+                return true;
+            }
+            lastFrameBehaved = false;
             return false;
         }
     }
@@ -97,7 +157,10 @@ namespace WindowsFormsApplication1
             this.emuHandle = emuHandle;
         }
 
-        public override bool behave() {
+        public override bool behave()
+        {
+            if (IsLocked()) return false;
+
             bool isTitleScreen = ScreenshotManager.ThisScreenPresent("title_screen.jpg", emuHandle,  0.95);
             bool isSelectScreen = ScreenshotManager.ThisScreenPresent("select_screen.jpg", emuHandle, 0.75);
 

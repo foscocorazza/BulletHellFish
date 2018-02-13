@@ -228,7 +228,7 @@ namespace WindowsFormsApplication1
 
         }
 
-        public T getBehaviorOfType<T>() where T : Behavior
+        public T getBehavior<T>() where T : Behavior
         {
             foreach (Behavior b in behaviors) {
                 if (b is T) return (T)b;
@@ -327,86 +327,16 @@ namespace WindowsFormsApplication1
 
     }
 
-    /*class GBInputBoard : InputBoard
-    {
-
-        public const string A = "A";
-        public const string B = "B";
-
-        public GBInputBoard(string FilePath) : base()
-        {
-            keys.Add(A, VirtualKeyCode.VK_S);
-            keys.Add(B, VirtualKeyCode.VK_A);
-
-            setRight(A);
-            setRight(B);
-
-            EnableEverything();
-            setAnyOtherKeyAsJolly();
-            setAnyKeyAsCombo();
-        }
-
-        public override void PressConfirm()
-        {
-            Press(A, 150, 150);
-        }
-    }*/
 
     class PSXInputBoard : InputBoard
     {
-
-        public const string CROSS = "X";
-        public const string CIRCLE = "O";
-        public const string SQUARE = "☐";
-        public const string TRIANGLE = "△";
-
+        
         public PSXInputBoard(string FilePath) : base(FilePath) {}
 
-        /* public PSXInputBoard() : base()
-         {
-
-
-
-             keys.Add(CROSS, VirtualKeyCode.VK_V);
-             keys.Add(CIRCLE, VirtualKeyCode.VK_X);
-             keys.Add(TRIANGLE, VirtualKeyCode.VK_D);
-             keys.Add(SQUARE, VirtualKeyCode.VK_S);
-
-             setRight(CROSS);
-             setRight(CIRCLE);
-             setRight(TRIANGLE);
-             setRight(SQUARE);
-
-             EnableEverything();
-             setAnyOtherKeyAsJolly();
-             setAnyKeyAsCombo();
-
-
-             // Set combos
-             // LEFT
-             AddCombo(UP, RIGHT);
-             AddCombo(DOWN, RIGHT);
-             AddCombo(UP, LEFT);
-             AddCombo(DOWN, LEFT);
-
-             //RIGHT x2
-             AddCombo(CROSS, SQUARE);
-             AddCombo(CROSS, TRIANGLE);
-             AddCombo(CROSS, CIRCLE);
-             AddCombo(CIRCLE, SQUARE);
-             AddCombo(CIRCLE, TRIANGLE);
-             AddCombo(SQUARE, TRIANGLE);
-
-             //RIGHT x3
-             AddCombo(SQUARE, TRIANGLE, CROSS);
-             AddCombo(SQUARE, TRIANGLE, CIRCLE);
-             AddCombo(SQUARE, CIRCLE, CROSS);
-             AddCombo(CIRCLE, TRIANGLE, CROSS);
-         }*/
 
         public override void PressConfirm()
         {
-            Press(CROSS, 150, 150);
+            Press("X", 150, 150);
         }
 
     }

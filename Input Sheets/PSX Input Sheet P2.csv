@@ -1,0 +1,35 @@
+﻿> MAPPING,,,
+> String Name,Virtual Key,Hand,Display Name
+,,,
+START,2,AMBI,START
+SELECT,1,AMBI,SELECT
+UP,U,LEFT,⇧
+DOWN,O,LEFT,⇩
+RIGHT,I,LEFT,⇨
+LEFT,P,LEFT,⇦
+,,,
+CROSS,R,RIGHT,X
+CIRCLE,E,RIGHT,O
+SQUARE,W,RIGHT,☐
+TRIANGLE,Q,RIGHT,△
+,,,
+> COMBOS,,,
+> DIRECTIONAL,,,
+⇧,⇨,,
+⇩,⇨,,
+⇧,⇦,,
+⇩,⇦,,
+,,,
+> RIGHT HAND x 2,,,
+X,☐,,
+X,△,,
+X,O,,
+O,☐,,
+O,△,,
+☐,△,,
+,,,
+> RIGHT HAND x 3,,,
+☐,△,X,
+☐,△,O,
+☐,O,X,
+O,△,X,

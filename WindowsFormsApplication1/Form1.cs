@@ -32,10 +32,12 @@ namespace WindowsFormsApplication1
 
         private string EmuWindowTitle;
         private int OriginalLeftInputLabelWidth;
-        private InputBoard inputBoard = new PSXInputBoard("C:\\Users\\simc\\Desktop\\The Bullet Hell Fish\\Input Sheets\\PSX Input Sheet.csv");
-        
-        private Thread leftHandThread;
-        private Thread rightHandThread;
+
+        Player player1 = new Player(new PSXInputBoard("C:\\Users\\simc\\Desktop\\The Bullet Hell Fish\\Input Sheets\\PSX Input Sheet P1.csv"));
+        Player player2 = new Player(new PSXInputBoard("C:\\Users\\simc\\Desktop\\The Bullet Hell Fish\\Input Sheets\\PSX Input Sheet P2.csv"));
+
+        IntPtr GameEmuHandle = IntPtr.Zero;
+
 
         public MainForm()
         {
@@ -43,7 +45,7 @@ namespace WindowsFormsApplication1
 
             // Create CheckedListbox
             AllowedInputListBox.Items.Clear();
-            foreach (string input in inputBoard.EveryInput())
+            foreach (string input in player1.InputBoard.EveryInput())
             {
                 AllowedInputListBox.Items.Add(input);
                 AllowedInputListBox.SetItemChecked(AllowedInputListBox.Items.IndexOf(input), true);
@@ -62,7 +64,7 @@ namespace WindowsFormsApplication1
 
         private void button1_Click(object sender, EventArgs e)
         {
-            if (leftHandThread == null) { Start(); }
+            if (!player1.IsPlaying()) { Start(); }
             else { Pause(); }
         }
 
@@ -81,39 +83,48 @@ namespace WindowsFormsApplication1
 
         private void Start()
         {
+            bool TwoPlayersMode = true;
+
             // Emu Window
             EmuWindowTitle = WindowNameDropDown.Text;
-            IntPtr emuHandle = FindWindow(null, EmuWindowTitle);
-            //IntPtr emuHandle = GetEmuWindowHandle(EmuWindowTitle);
+            GameEmuHandle = FindWindow(null, EmuWindowTitle);
 
-            if (emuHandle == IntPtr.Zero)
+            if (GameEmuHandle == IntPtr.Zero)
             {
-                MessageBox.Show("Window not found");
-                return;
+                // Try again
+                Process[] processes = Process.GetProcessesByName(EmuWindowTitle);
+                if (processes != null && processes.Length > 0 && processes[0].MainWindowHandle != IntPtr.Zero)
+                {
+                    GameEmuHandle = processes[0].MainWindowHandle;
+                } else { 
+                    MessageBox.Show("Window not found");
+                    return;
+                }
             }
 
-            // InputBoard Behaviors
-            inputBoard.ClearBehaviors();
-            inputBoard.AddBehavior(new PressStartAtTitleScreenBehavior(emuHandle));
-            inputBoard.AddBehavior(new PressStartToContinueBehavior(emuHandle));
-            inputBoard.AddBehavior(new StartAnArcadeBehavior(emuHandle));
+            // InputBoard Behaviors: Only for Player 1!
+            player1.InputBoard.ClearBehaviors();
+            player1.InputBoard.AddBehavior(new PressStartToContinueSoulcaliburIIIBehavior(GameEmuHandle));
+           /* player1.InputBoard.AddBehavior(new PressStartAtTitleScreenBehavior(emuHandle));
+            ;
+            player1.InputBoard.AddBehavior(new StartAnArcadeBehavior(emuHandle));*/
 
             // Views
             StartPauseButton.Text = "Pause";
             SpeedMultiplierTextBox.Enabled = false;
-            SetForegroundWindow(emuHandle);
-            
+            SetForegroundWindow(GameEmuHandle);
+
             // Input threads
-            leftHandThread = createThread(emuHandle, Hand.Left, true);
-            leftHandThread.Start();
-            if (inputBoard.TwoHandMode) {
-                rightHandThread = createThread(emuHandle, Hand.Right, false);
-                rightHandThread.Start();
+            player1.Play(GameEmuHandle, this);
+            
+            if(TwoPlayersMode)
+            {
+                player2.Play(GameEmuHandle, this);
             }
             
         }
 
-        private Thread createThread(IntPtr emuHandle, Hand hand, bool updateClocks) {
+        public Thread CreateThread(IntPtr emuHandle, Hand hand, bool updateClocks, InputBoard inputBoard) {
             return new Thread(() =>
             {
                 bool leftSide = hand == Hand.Left;
@@ -160,12 +171,12 @@ namespace WindowsFormsApplication1
                                 Utils.fillWithDate(FastClockTextBox, secondsElapsed * multiplier + startGameMS);
                             }
 
-                            StartAnArcadeBehavior arcadeBehavior = inputBoard.getBehaviorOfType<StartAnArcadeBehavior>();
+                            StartAnArcadeBehavior arcadeBehavior = inputBoard.getBehavior<StartAnArcadeBehavior>();
                             if (arcadeBehavior != null) {
                                 arcadeTextBox.Text = (arcadeBehavior.ArcadeStarted + arcades).ToString();
                             }
 
-                            PressStartToContinueBehavior continueBehavior = inputBoard.getBehaviorOfType<PressStartToContinueBehavior>();
+                            PressStartToContinueSoulcaliburIIIBehavior continueBehavior = inputBoard.getBehavior<PressStartToContinueSoulcaliburIIIBehavior>();
                             if (continueBehavior != null)
                             {
                                 continuesTextBox.Text = (continueBehavior.Continues + continues).ToString();
@@ -174,7 +185,9 @@ namespace WindowsFormsApplication1
                         }));
                         
 
-                        inputBoard.PressCombo(nextCombo, minHoldTime, maxHoldTime);
+                        if(!Behavior.IsLocked()) { 
+                            inputBoard.PressCombo(nextCombo, minHoldTime, maxHoldTime);
+                        }
 
                         Thread.Sleep(sleepTime);
                     }
@@ -203,9 +216,9 @@ namespace WindowsFormsApplication1
                 LeftInputLabel.Text = "-Paused-";
                 StartPauseButton.Text = "Start";
 
-                Utils.Abort(ref leftHandThread);
-                Utils.Abort(ref rightHandThread);
-                
+
+                player1.Pause();
+                player2.Pause();
 
             }));
         }
@@ -214,11 +227,13 @@ namespace WindowsFormsApplication1
         {
             if (e.NewValue == CheckState.Checked)
             {
-                inputBoard.Enable((string)AllowedInputListBox.Items[e.Index]);
+                player1.InputBoard.Enable((string)AllowedInputListBox.Items[e.Index]);
+                player2.InputBoard.Enable((string)AllowedInputListBox.Items[e.Index]);
             }
             else
             {
-                inputBoard.Disable((string)AllowedInputListBox.Items[e.Index]);
+                player1.InputBoard.Disable((string)AllowedInputListBox.Items[e.Index]);
+                player2.InputBoard.Disable((string)AllowedInputListBox.Items[e.Index]);
             }
 
         }
@@ -232,33 +247,48 @@ namespace WindowsFormsApplication1
 
         private void SaveStartScreenButton_Click(object sender, EventArgs e)
         {
-            IntPtr emuHandle = FindWindow(null, EmuWindowTitle);
-            SetForegroundWindow(emuHandle);
-            ScreenshotManager.SaveScreenAs(ScreenshotManager.GenerateStartScreenPath(), emuHandle);
+            //IntPtr emuHandle = FindWindow(null, EmuWindowTitle);
+            SetForegroundWindow(GameEmuHandle);
+            ScreenshotManager.SaveScreenAs(ScreenshotManager.GenerateStartScreenPath(), GameEmuHandle);
         }
         
         private void RefreshComboBox()
         {
             WindowNameDropDown.Items.Clear();
             Process[] processlist = Process.GetProcesses();
+
+
+            WindowNameDropDown.Items.Add(" - Window Names - ");
+
             foreach (Process process in processlist)
             {
-
                 if (!string.IsNullOrEmpty(process.MainWindowTitle))
                 {
                     WindowNameDropDown.Items.Add(process.MainWindowTitle);
+                }
+            }
+
+            WindowNameDropDown.Items.Add(" - Processes - ");
+
+
+            foreach (Process process in processlist)
+            {
+                if (!string.IsNullOrEmpty(process.ProcessName))
+                {
+                    WindowNameDropDown.Items.Add(process.ProcessName);
                 }
             }
         }
 
         private void TwoHandsCheckBox_CheckedChanged(object sender, EventArgs e)
         {
-            inputBoard.TwoHandMode = TwoHandsCheckBox.Checked;
+            player1.InputBoard.TwoHandMode = TwoHandsCheckBox.Checked;
+            player2.InputBoard.TwoHandMode = TwoHandsCheckBox.Checked;
             setTwoHandLabels();
         }
 
         private void setTwoHandLabels() {
-            if (inputBoard.TwoHandMode)
+            if (player1.InputBoard.TwoHandMode)
             {
                 LeftHandGroupBox.Text = "Left Hand";
                 RightHandGroupBox.Enabled = true;
