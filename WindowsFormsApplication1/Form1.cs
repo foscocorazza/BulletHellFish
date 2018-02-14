@@ -105,9 +105,10 @@ namespace WindowsFormsApplication1
             // InputBoard Behaviors: Only for Player 1!
             player1.InputBoard.ClearBehaviors();
             player1.InputBoard.AddBehavior(new PressStartToContinueSoulcaliburIIIBehavior(GameEmuHandle));
-           /* player1.InputBoard.AddBehavior(new PressStartAtTitleScreenBehavior(emuHandle));
-            ;
-            player1.InputBoard.AddBehavior(new StartAnArcadeBehavior(emuHandle));*/
+            player1.InputBoard.AddBehavior(new FileInterpretedBehavior("C:\\Users\\simc\\Desktop\\The Bullet Hell Fish\\Behaviors\\Behavior.bhf"));
+            /* player1.InputBoard.AddBehavior(new PressStartAtTitleScreenBehavior(emuHandle));
+             ;
+             player1.InputBoard.AddBehavior(new StartAnArcadeBehavior(emuHandle));*/
 
             // Views
             StartPauseButton.Text = "Pause";
@@ -143,14 +144,16 @@ namespace WindowsFormsApplication1
 
                 int continues = Utils.IntFromTextBox(continuesTextBox, 0);
                 int arcades = Utils.IntFromTextBox(arcadeTextBox, 0);
-
+                
                 while (true)
                 {
                     if (Utils.GetWindowCaption(emuHandle).Equals(Utils.GetWindowCaption(GetForegroundWindow())))
                     {
-                        bool somethingHappened = inputBoard.ExecAdditionalBehaviors();
 
-                        if (somethingHappened) continue;
+                        if(leftSide) {
+                            bool somethingHappened = inputBoard.ExecAdditionalBehaviors();
+                            if (somethingHappened) continue;
+                        }
 
                         string[] nextCombo = inputBoard.NextCombo(hand);
 
@@ -186,7 +189,7 @@ namespace WindowsFormsApplication1
                         
 
                         if(!Behavior.IsLocked()) { 
-                            inputBoard.PressCombo(nextCombo, minHoldTime, maxHoldTime);
+                           // inputBoard.PressCombo(nextCombo, minHoldTime, maxHoldTime);
                         }
 
                         Thread.Sleep(sleepTime);

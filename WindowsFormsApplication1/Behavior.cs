@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -12,11 +13,14 @@ namespace WindowsFormsApplication1
         protected InputBoard inputBoard;
         protected int tick = 0;
         protected int waitCycle = 0;
+        protected IntPtr emuHandle;
+
         private static bool locked = false;
 
-        protected Behavior(int waitCycle)
+        protected Behavior(int waitCycle, IntPtr emuHandle)
         {
             this.waitCycle = waitCycle;
+            this.emuHandle = emuHandle;
         }
 
         public abstract bool behave();
@@ -33,12 +37,12 @@ namespace WindowsFormsApplication1
 
         }
 
-        protected static void Lock()
+        public static void Lock()
         {
             locked = true;
         }
 
-        protected static void Unlock()
+        public static void Unlock()
         {
             locked = false;
         }
@@ -52,6 +56,40 @@ namespace WindowsFormsApplication1
         {
             this.inputBoard = inputBoard;
         }
+
+
+
+        public void Wait(int ms) {
+            Thread.Sleep(ms);
+        }
+
+        public void Press(string displayName)
+        {
+            inputBoard.Press(displayName, 200, 200);
+        }
+
+
+        public bool IsSimilarTo(string path, bool multicheck, System.Drawing.Rectangle rectangle) {
+            return ScreenshotManager.ThisScreenPresent(path+".jpg", emuHandle, rectangle);
+        }
+
+        public bool IsSimilarTo(string path, bool multicheck)
+        {
+            return ScreenshotManager.ThisScreenPresent(path + ".jpg", emuHandle);
+        }
+
+        public bool IsSimilarTo(string path, bool multicheck, System.Drawing.Rectangle rectangle, float similarity)
+        {
+            return ScreenshotManager.ThisScreenPresent(path + ".jpg", emuHandle, rectangle, similarity);
+        }
+
+        public bool IsSimilarTo(string path, bool multicheck, float similarity)
+        {
+            return ScreenshotManager.ThisScreenPresent(path + ".jpg", emuHandle, similarity);
+        }
+
+
+
     }
 
     public class PressStartAtTitleScreenBehavior : Behavior
@@ -120,7 +158,10 @@ namespace WindowsFormsApplication1
         {
             if (IsLocked()) return false;
 
-            if (ScreenshotManager.ThisScreenPresent("victory_screen.jpg", emuHandle, new System.Drawing.Rectangle(77, 620, 1253, 116)))
+            bool VictoryScreen = ScreenshotManager.ThisScreenPresent("victory_screen.jpg", emuHandle, new System.Drawing.Rectangle(77, 620, 1253, 116));
+            bool DrawScreen = ScreenshotManager.ThisScreenPresent("draw_screen.jpg", emuHandle, new System.Drawing.Rectangle(510, 624, 383, 106));
+
+            if (VictoryScreen || DrawScreen)
             {
 
                 Lock();
@@ -130,11 +171,11 @@ namespace WindowsFormsApplication1
                     Continues++;
                 }
 
-                inputBoard.PressStart();
+                Press("Start");
 
-                Thread.Sleep(1000);
+                Wait(1000);
 
-                inputBoard.Press("X", 200, 200);
+                Press("X");
 
                 Unlock();
 
@@ -144,15 +185,15 @@ namespace WindowsFormsApplication1
             lastFrameBehaved = false;
             return false;
         }
+
     }
 
     public class StartAnArcadeBehavior : Behavior
     {
-        protected IntPtr emuHandle;
         private bool lastFrameWasArcade = false;
         public int ArcadeStarted = 0;
 
-        public StartAnArcadeBehavior(IntPtr emuHandle) : base(0)
+        public StartAnArcadeBehavior(IntPtr emuHandle) : base(0, emuHandle)
         {
             this.emuHandle = emuHandle;
         }
@@ -183,7 +224,7 @@ namespace WindowsFormsApplication1
                 } while (!isSelectScreen && tries > 0);
 
                 if (tries <= 0) {
-                    //Something went wrong, just forget about the tart a new arcade thingy
+                    //Something went wrong, just forget about the start a new arcade thingy
                     ArcadeStarted--;
                     return false;
                 }
@@ -205,6 +246,26 @@ namespace WindowsFormsApplication1
             }
             lastFrameWasArcade = false;
             return false;
+        }
+    }
+
+    public class FileInterpretedBehavior : Behavior
+    {
+
+        string[] program;
+        BehaviorInterpreter interpreter;
+
+        public FileInterpretedBehavior(string filePath) : base(0)
+        {
+            program = File.ReadAllLines(filePath);
+            interpreter = new BehaviorInterpreter(this, program);
+        }
+
+        public override bool behave()
+        {
+            if (IsLocked()) return false;
+            return interpreter.Execute();
+
         }
     }
 }

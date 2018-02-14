@@ -64,6 +64,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Behavior.cs" />
+    <Compile Include="BehaviorInterpreter.cs" />
     <Compile Include="Form1.cs">
       <SubType>Form</SubType>
     </Compile>
