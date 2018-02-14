@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading;
 using System.Windows.Forms;
 
-namespace WindowsFormsApplication1
+namespace BulletHellFish
 {
     class Utils
     {

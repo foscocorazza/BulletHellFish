@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace WindowsFormsApplication1
+namespace BulletHellFish
 {
     class Player
     {
@@ -19,9 +19,9 @@ namespace WindowsFormsApplication1
             this.InputBoard = inputBoard;
         }
 
-        public void Play(IntPtr emuHandle, MainForm form)
+        public void Play(IntPtr emuHandle, BulletHellFishForm form, bool main)
         {
-            leftHandThread = form.CreateThread(emuHandle, Hand.Left, true, InputBoard);
+            leftHandThread = form.CreateThread(emuHandle, Hand.Left, main, InputBoard);
             leftHandThread.Start();
             if (InputBoard.TwoHandMode)
             {

@@ -8,7 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using WindowsInput;
 
-namespace WindowsFormsApplication1
+namespace BulletHellFish
 {
 
     public enum Hand

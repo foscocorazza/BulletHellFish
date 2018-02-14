@@ -1,6 +1,6 @@
-﻿namespace WindowsFormsApplication1
+﻿namespace BulletHellFish
 {
-    partial class MainForm
+    partial class BulletHellFishForm
     {
         /// <summary>
         /// Required designer variable.
@@ -60,11 +60,21 @@
             this.textColorButton = new System.Windows.Forms.Button();
             this.backColorButton = new System.Windows.Forms.Button();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
-            this.colorDialog1 = new System.Windows.Forms.ColorDialog();
-            this.label4 = new System.Windows.Forms.Label();
-            this.label5 = new System.Windows.Forms.Label();
-            this.continuesTextBox = new System.Windows.Forms.TextBox();
             this.arcadeTextBox = new System.Windows.Forms.TextBox();
+            this.continuesTextBox = new System.Windows.Forms.TextBox();
+            this.label5 = new System.Windows.Forms.Label();
+            this.label4 = new System.Windows.Forms.Label();
+            this.colorDialog1 = new System.Windows.Forms.ColorDialog();
+            this.label9 = new System.Windows.Forms.Label();
+            this.Controller1MappingTextBox = new System.Windows.Forms.TextBox();
+            this.label10 = new System.Windows.Forms.Label();
+            this.Controller2MappingTextBox = new System.Windows.Forms.TextBox();
+            this.label11 = new System.Windows.Forms.Label();
+            this.BehaviorTextBox = new System.Windows.Forms.TextBox();
+            this.Controller1Browse = new System.Windows.Forms.Button();
+            this.Controller2Browse = new System.Windows.Forms.Button();
+            this.BehaviorBrowse = new System.Windows.Forms.Button();
+            this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
             this.LeftHandGroupBox.SuspendLayout();
             this.RightHandGroupBox.SuspendLayout();
             this.groupBox1.SuspendLayout();
@@ -421,27 +431,17 @@
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Tekken 3";
             // 
-            // label4
+            // arcadeTextBox
             // 
-            this.label4.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label4.ForeColor = System.Drawing.SystemColors.ControlLightLight;
-            this.label4.Location = new System.Drawing.Point(6, 16);
-            this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(221, 26);
-            this.label4.TabIndex = 32;
-            this.label4.Text = "Continues";
-            this.label4.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            // 
-            // label5
-            // 
-            this.label5.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label5.ForeColor = System.Drawing.SystemColors.ControlLightLight;
-            this.label5.Location = new System.Drawing.Point(6, 120);
-            this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(221, 26);
-            this.label5.TabIndex = 33;
-            this.label5.Text = "Full Arcades";
-            this.label5.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.arcadeTextBox.BackColor = System.Drawing.Color.Maroon;
+            this.arcadeTextBox.Font = new System.Drawing.Font("Microsoft Sans Serif", 20.25F, System.Drawing.FontStyle.Bold);
+            this.arcadeTextBox.ForeColor = System.Drawing.SystemColors.ControlLightLight;
+            this.arcadeTextBox.Location = new System.Drawing.Point(10, 149);
+            this.arcadeTextBox.Name = "arcadeTextBox";
+            this.arcadeTextBox.Size = new System.Drawing.Size(215, 38);
+            this.arcadeTextBox.TabIndex = 34;
+            this.arcadeTextBox.Text = "0";
+            this.arcadeTextBox.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             // 
             // continuesTextBox
             // 
@@ -455,25 +455,134 @@
             this.continuesTextBox.Text = "0";
             this.continuesTextBox.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             // 
-            // arcadeTextBox
+            // label5
             // 
-            this.arcadeTextBox.BackColor = System.Drawing.Color.Maroon;
-            this.arcadeTextBox.Font = new System.Drawing.Font("Microsoft Sans Serif", 20.25F, System.Drawing.FontStyle.Bold);
-            this.arcadeTextBox.ForeColor = System.Drawing.SystemColors.ControlLightLight;
-            this.arcadeTextBox.Location = new System.Drawing.Point(10, 149);
-            this.arcadeTextBox.Name = "arcadeTextBox";
-            this.arcadeTextBox.Size = new System.Drawing.Size(215, 38);
-            this.arcadeTextBox.TabIndex = 34;
-            this.arcadeTextBox.Text = "0";
-            this.arcadeTextBox.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.label5.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label5.ForeColor = System.Drawing.SystemColors.ControlLightLight;
+            this.label5.Location = new System.Drawing.Point(6, 120);
+            this.label5.Name = "label5";
+            this.label5.Size = new System.Drawing.Size(221, 26);
+            this.label5.TabIndex = 33;
+            this.label5.Text = "Full Arcades";
+            this.label5.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
-            // MainForm
+            // label4
+            // 
+            this.label4.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label4.ForeColor = System.Drawing.SystemColors.ControlLightLight;
+            this.label4.Location = new System.Drawing.Point(6, 16);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(221, 26);
+            this.label4.TabIndex = 32;
+            this.label4.Text = "Continues";
+            this.label4.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // label9
+            // 
+            this.label9.AutoSize = true;
+            this.label9.Location = new System.Drawing.Point(12, 341);
+            this.label9.Name = "label9";
+            this.label9.Size = new System.Drawing.Size(104, 13);
+            this.label9.TabIndex = 20;
+            this.label9.Text = "Controller 1 Mapping";
+            this.label9.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // Controller1MappingTextBox
+            // 
+            this.Controller1MappingTextBox.Location = new System.Drawing.Point(122, 338);
+            this.Controller1MappingTextBox.Name = "Controller1MappingTextBox";
+            this.Controller1MappingTextBox.Size = new System.Drawing.Size(145, 20);
+            this.Controller1MappingTextBox.TabIndex = 21;
+            this.Controller1MappingTextBox.Text = "C:\\Users\\Simone Chelo\\Documents\\BulletHellFish\\Input Sheets\\PSX Input Sheet P1.cs" +
+    "v";
+            // 
+            // label10
+            // 
+            this.label10.AutoSize = true;
+            this.label10.Location = new System.Drawing.Point(12, 367);
+            this.label10.Name = "label10";
+            this.label10.Size = new System.Drawing.Size(104, 13);
+            this.label10.TabIndex = 30;
+            this.label10.Text = "Controller 2 Mapping";
+            this.label10.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // Controller2MappingTextBox
+            // 
+            this.Controller2MappingTextBox.Location = new System.Drawing.Point(122, 364);
+            this.Controller2MappingTextBox.Name = "Controller2MappingTextBox";
+            this.Controller2MappingTextBox.Size = new System.Drawing.Size(145, 20);
+            this.Controller2MappingTextBox.TabIndex = 31;
+            this.Controller2MappingTextBox.Text = "C:\\Users\\Simone Chelo\\Documents\\BulletHellFish\\Input Sheets\\PSX Input Sheet P2.cs" +
+    "v";
+            // 
+            // label11
+            // 
+            this.label11.AutoSize = true;
+            this.label11.Location = new System.Drawing.Point(12, 393);
+            this.label11.Name = "label11";
+            this.label11.Size = new System.Drawing.Size(49, 13);
+            this.label11.TabIndex = 32;
+            this.label11.Text = "Behavior";
+            this.label11.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // BehaviorTextBox
+            // 
+            this.BehaviorTextBox.Location = new System.Drawing.Point(122, 390);
+            this.BehaviorTextBox.Name = "BehaviorTextBox";
+            this.BehaviorTextBox.Size = new System.Drawing.Size(145, 20);
+            this.BehaviorTextBox.TabIndex = 33;
+            this.BehaviorTextBox.Text = "C:\\Users\\Simone Chelo\\Documents\\BulletHellFish\\Behaviors\\Behavior.bhf";
+            // 
+            // Controller1Browse
+            // 
+            this.Controller1Browse.Location = new System.Drawing.Point(273, 338);
+            this.Controller1Browse.Name = "Controller1Browse";
+            this.Controller1Browse.Size = new System.Drawing.Size(54, 20);
+            this.Controller1Browse.TabIndex = 34;
+            this.Controller1Browse.Text = "Browse";
+            this.Controller1Browse.UseVisualStyleBackColor = true;
+            this.Controller1Browse.Click += new System.EventHandler(this.Controller1Browse_Click);
+            // 
+            // Controller2Browse
+            // 
+            this.Controller2Browse.Location = new System.Drawing.Point(273, 364);
+            this.Controller2Browse.Name = "Controller2Browse";
+            this.Controller2Browse.Size = new System.Drawing.Size(54, 20);
+            this.Controller2Browse.TabIndex = 35;
+            this.Controller2Browse.Text = "Browse";
+            this.Controller2Browse.UseVisualStyleBackColor = true;
+            this.Controller2Browse.Click += new System.EventHandler(this.Controller2Browse_Click);
+            // 
+            // BehaviorBrowse
+            // 
+            this.BehaviorBrowse.Location = new System.Drawing.Point(273, 390);
+            this.BehaviorBrowse.Name = "BehaviorBrowse";
+            this.BehaviorBrowse.Size = new System.Drawing.Size(54, 20);
+            this.BehaviorBrowse.TabIndex = 36;
+            this.BehaviorBrowse.Text = "Browse";
+            this.BehaviorBrowse.UseVisualStyleBackColor = true;
+            this.BehaviorBrowse.Click += new System.EventHandler(this.BehaviorBrowse_Click);
+            // 
+            // openFileDialog1
+            // 
+            this.openFileDialog1.FileName = "openFileDialog1";
+            // 
+            // BulletHellFishForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.Maroon;
-            this.ClientSize = new System.Drawing.Size(804, 330);
+            this.ClientSize = new System.Drawing.Size(804, 464);
+            this.Controls.Add(this.BehaviorBrowse);
+            this.Controls.Add(this.Controller2Browse);
+            this.Controls.Add(this.Controller1Browse);
+            this.Controls.Add(this.label11);
+            this.Controls.Add(this.BehaviorTextBox);
+            this.Controls.Add(this.label10);
+            this.Controls.Add(this.Controller2MappingTextBox);
+            this.Controls.Add(this.label9);
             this.Controls.Add(this.groupBox2);
+            this.Controls.Add(this.Controller1MappingTextBox);
             this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.PlusLabel);
             this.Controls.Add(this.RightInputLabel);
@@ -486,7 +595,7 @@
             this.Controls.Add(this.LeftInputLabel);
             this.Controls.Add(this.StartPauseButton);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.Fixed3D;
-            this.Name = "MainForm";
+            this.Name = "BulletHellFishForm";
             this.Text = "The Bullet Hell Fish";
             this.LeftHandGroupBox.ResumeLayout(false);
             this.LeftHandGroupBox.PerformLayout();
@@ -540,6 +649,16 @@
         private System.Windows.Forms.TextBox continuesTextBox;
         private System.Windows.Forms.Label label5;
         private System.Windows.Forms.Label label4;
+        private System.Windows.Forms.Label label9;
+        private System.Windows.Forms.TextBox Controller1MappingTextBox;
+        private System.Windows.Forms.Label label10;
+        private System.Windows.Forms.TextBox Controller2MappingTextBox;
+        private System.Windows.Forms.Label label11;
+        private System.Windows.Forms.TextBox BehaviorTextBox;
+        private System.Windows.Forms.Button Controller1Browse;
+        private System.Windows.Forms.Button Controller2Browse;
+        private System.Windows.Forms.Button BehaviorBrowse;
+        private System.Windows.Forms.OpenFileDialog openFileDialog1;
     }
 }
 

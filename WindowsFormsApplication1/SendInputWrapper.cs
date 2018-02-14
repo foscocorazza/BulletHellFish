@@ -6,9 +6,9 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using WindowsInput;
-using InputTypes = WindowsFormsApplication1.TripletteList<WindowsInput.VirtualKeyCode, WindowsFormsApplication1.ScanCodeShort, string>;
+using InputTypes = BulletHellFish.TripletteList<WindowsInput.VirtualKeyCode, BulletHellFish.ScanCodeShort, string>;
 
-namespace WindowsFormsApplication1
+namespace BulletHellFish
 {
     class SendInputWrapper
     {

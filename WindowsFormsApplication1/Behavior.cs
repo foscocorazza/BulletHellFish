@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace WindowsFormsApplication1
+namespace BulletHellFish
 {
     public abstract class Behavior
     {
@@ -69,37 +69,31 @@ namespace WindowsFormsApplication1
         }
 
 
-        public bool IsSimilarTo(string path, bool multicheck, System.Drawing.Rectangle rectangle) {
+        public bool IsSimilarTo(string path, System.Drawing.Rectangle rectangle) {
             return ScreenshotManager.ThisScreenPresent(path+".jpg", emuHandle, rectangle);
         }
 
-        public bool IsSimilarTo(string path, bool multicheck)
+        public bool IsSimilarTo(string path)
         {
             return ScreenshotManager.ThisScreenPresent(path + ".jpg", emuHandle);
         }
 
-        public bool IsSimilarTo(string path, bool multicheck, System.Drawing.Rectangle rectangle, float similarity)
+        public bool IsSimilarTo(string path, System.Drawing.Rectangle rectangle, float similarity)
         {
             return ScreenshotManager.ThisScreenPresent(path + ".jpg", emuHandle, rectangle, similarity);
         }
 
-        public bool IsSimilarTo(string path, bool multicheck, float similarity)
+        public bool IsSimilarTo(string path, float similarity)
         {
             return ScreenshotManager.ThisScreenPresent(path + ".jpg", emuHandle, similarity);
         }
-
-
-
+        
     }
 
     public class PressStartAtTitleScreenBehavior : Behavior
     {
-        protected IntPtr emuHandle;
-
-        public PressStartAtTitleScreenBehavior(IntPtr emuHandle) : base(10)
-        {
-            this.emuHandle = emuHandle;
-        }
+        public PressStartAtTitleScreenBehavior(IntPtr emuHandle) : base(10, emuHandle)
+        {}
         
         public override bool behave() {
             if (skip()) return false;
@@ -115,14 +109,11 @@ namespace WindowsFormsApplication1
 
     public class PressStartToContinueTekkenIIIBehavior : Behavior
     {
-        protected IntPtr emuHandle;
         private bool lastFrameWasContinue = false;
         public int Continues = 0;
 
-        public PressStartToContinueTekkenIIIBehavior(IntPtr emuHandle) : base(0)
-        {
-            this.emuHandle = emuHandle;
-        }
+        public PressStartToContinueTekkenIIIBehavior(IntPtr emuHandle) : base(0, emuHandle)
+        {}
 
         public override bool behave() 
         {
@@ -145,14 +136,11 @@ namespace WindowsFormsApplication1
 
     public class PressStartToContinueSoulcaliburIIIBehavior : Behavior
     {
-        protected IntPtr emuHandle;
         private bool lastFrameBehaved = false;
         public int Continues = 0;
 
-        public PressStartToContinueSoulcaliburIIIBehavior(IntPtr emuHandle) : base(0)
-        {
-            this.emuHandle = emuHandle;
-        }
+        public PressStartToContinueSoulcaliburIIIBehavior(IntPtr emuHandle) : base(0, emuHandle)
+        {}
 
         public override bool behave()
         {
@@ -255,7 +243,7 @@ namespace WindowsFormsApplication1
         string[] program;
         BehaviorInterpreter interpreter;
 
-        public FileInterpretedBehavior(string filePath) : base(0)
+        public FileInterpretedBehavior(string filePath, IntPtr emuHandle) : base(0, emuHandle)
         {
             program = File.ReadAllLines(filePath);
             interpreter = new BehaviorInterpreter(this, program);

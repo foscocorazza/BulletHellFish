@@ -1,6 +1,4 @@
-﻿
-using EyeOpen.Imaging.Processing;
-using IWshRuntimeLibrary;
+﻿using IWshRuntimeLibrary;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -14,9 +12,9 @@ using System.Threading;
 using System.Windows.Forms;
 using WindowsInput;
 
-namespace WindowsFormsApplication1
+namespace BulletHellFish
 {
-    public partial class MainForm : Form
+    public partial class BulletHellFishForm : Form
     {
         //Imports
         [DllImport("user32.dll")]
@@ -33,15 +31,32 @@ namespace WindowsFormsApplication1
         private string EmuWindowTitle;
         private int OriginalLeftInputLabelWidth;
 
-        Player player1 = new Player(new PSXInputBoard("C:\\Users\\simc\\Desktop\\The Bullet Hell Fish\\Input Sheets\\PSX Input Sheet P1.csv"));
-        Player player2 = new Player(new PSXInputBoard("C:\\Users\\simc\\Desktop\\The Bullet Hell Fish\\Input Sheets\\PSX Input Sheet P2.csv"));
+        Player player1;// = new Player(new PSXInputBoard("C:\\Users\\simc\\Desktop\\The Bullet Hell Fish\\Input Sheets\\PSX Input Sheet P1.csv"));
+        Player player2;// = new Player(new PSXInputBoard("C:\\Users\\simc\\Desktop\\The Bullet Hell Fish\\Input Sheets\\PSX Input Sheet P2.csv"));
 
         IntPtr GameEmuHandle = IntPtr.Zero;
 
 
-        public MainForm()
+        public BulletHellFishForm()
         {
             InitializeComponent();
+            
+            // StdWindow
+            WindowNameDropDown.Text = "PCSXR";
+
+            InitPlayers();
+        }
+
+        private void InitPlayers()
+        {
+            if (!string.IsNullOrWhiteSpace(Controller1MappingTextBox.Text))
+                player1 = new Player(new PSXInputBoard(Controller1MappingTextBox.Text));
+
+            if (!string.IsNullOrWhiteSpace(Controller2MappingTextBox.Text))
+                player2 = new Player(new PSXInputBoard(Controller2MappingTextBox.Text));
+
+            if (player1 == null)
+                return;
 
             // Create CheckedListbox
             AllowedInputListBox.Items.Clear();
@@ -57,9 +72,6 @@ namespace WindowsFormsApplication1
             // TwoHandMode
             OriginalLeftInputLabelWidth = LeftInputLabel.Width;
             TwoHandsCheckBox_CheckedChanged(null, null);
-
-            // StdWindow
-            WindowNameDropDown.Text = "PCSXR";
         }
 
         private void button1_Click(object sender, EventArgs e)
@@ -105,10 +117,7 @@ namespace WindowsFormsApplication1
             // InputBoard Behaviors: Only for Player 1!
             player1.InputBoard.ClearBehaviors();
             player1.InputBoard.AddBehavior(new PressStartToContinueSoulcaliburIIIBehavior(GameEmuHandle));
-            player1.InputBoard.AddBehavior(new FileInterpretedBehavior("C:\\Users\\simc\\Desktop\\The Bullet Hell Fish\\Behaviors\\Behavior.bhf"));
-            /* player1.InputBoard.AddBehavior(new PressStartAtTitleScreenBehavior(emuHandle));
-             ;
-             player1.InputBoard.AddBehavior(new StartAnArcadeBehavior(emuHandle));*/
+            player1.InputBoard.AddBehavior(new FileInterpretedBehavior(BehaviorTextBox.Text, GameEmuHandle));
 
             // Views
             StartPauseButton.Text = "Pause";
@@ -116,16 +125,16 @@ namespace WindowsFormsApplication1
             SetForegroundWindow(GameEmuHandle);
 
             // Input threads
-            player1.Play(GameEmuHandle, this);
+            player1.Play(GameEmuHandle, this, true);
             
             if(TwoPlayersMode)
             {
-                player2.Play(GameEmuHandle, this);
+                player2.Play(GameEmuHandle, this, false);
             }
             
         }
 
-        public Thread CreateThread(IntPtr emuHandle, Hand hand, bool updateClocks, InputBoard inputBoard) {
+        public Thread CreateThread(IntPtr emuHandle, Hand hand, bool main, InputBoard inputBoard) {
             return new Thread(() =>
             {
                 bool leftSide = hand == Hand.Left;
@@ -150,7 +159,7 @@ namespace WindowsFormsApplication1
                     if (Utils.GetWindowCaption(emuHandle).Equals(Utils.GetWindowCaption(GetForegroundWindow())))
                     {
 
-                        if(leftSide) {
+                        if(main) {
                             bool somethingHappened = inputBoard.ExecAdditionalBehaviors();
                             if (somethingHappened) continue;
                         }
@@ -168,7 +177,7 @@ namespace WindowsFormsApplication1
                                 HistoryListBox.TopIndex = Math.Max(HistoryListBox.Items.Count - visibleItems + 1, 0);
                             }
 
-                            if (updateClocks) { 
+                            if (main) { 
                                 long secondsElapsed = Utils.millisecondsSinceEpoch() - startWorldMS;
                                 Utils.fillWithDate(NormalClockTextBox, secondsElapsed + startRealMS);
                                 Utils.fillWithDate(FastClockTextBox, secondsElapsed * multiplier + startGameMS);
@@ -230,13 +239,17 @@ namespace WindowsFormsApplication1
         {
             if (e.NewValue == CheckState.Checked)
             {
-                player1.InputBoard.Enable((string)AllowedInputListBox.Items[e.Index]);
-                player2.InputBoard.Enable((string)AllowedInputListBox.Items[e.Index]);
+                if (player1 != null)
+                    player1.InputBoard.Enable((string)AllowedInputListBox.Items[e.Index]);
+                if(player2 != null)
+                    player2.InputBoard.Enable((string)AllowedInputListBox.Items[e.Index]);
             }
             else
             {
-                player1.InputBoard.Disable((string)AllowedInputListBox.Items[e.Index]);
-                player2.InputBoard.Disable((string)AllowedInputListBox.Items[e.Index]);
+                if (player1 != null)
+                    player1.InputBoard.Disable((string)AllowedInputListBox.Items[e.Index]);
+                if (player2 != null)
+                    player2.InputBoard.Disable((string)AllowedInputListBox.Items[e.Index]);
             }
 
         }
@@ -285,8 +298,10 @@ namespace WindowsFormsApplication1
 
         private void TwoHandsCheckBox_CheckedChanged(object sender, EventArgs e)
         {
-            player1.InputBoard.TwoHandMode = TwoHandsCheckBox.Checked;
-            player2.InputBoard.TwoHandMode = TwoHandsCheckBox.Checked;
+            if (player1 != null)
+                player1.InputBoard.TwoHandMode = TwoHandsCheckBox.Checked;
+            if (player2 != null)
+                player2.InputBoard.TwoHandMode = TwoHandsCheckBox.Checked;
             setTwoHandLabels();
         }
 
@@ -366,5 +381,43 @@ namespace WindowsFormsApplication1
             }
         }
 
+        private void Controller1Browse_Click(object sender, EventArgs e)
+        {
+            openFileDialog1.Multiselect = false;
+            openFileDialog1.CheckFileExists = true;
+            openFileDialog1.Filter = "Comma Separated Values (*.csv)|*.csv";
+
+            if (openFileDialog1.ShowDialog() == DialogResult.OK)
+            {
+                Controller1MappingTextBox.Text = openFileDialog1.FileName;
+                InitPlayers();
+            }
+        }
+
+        private void Controller2Browse_Click(object sender, EventArgs e)
+        {
+            openFileDialog1.Multiselect = false;
+            openFileDialog1.CheckFileExists = true;
+            openFileDialog1.Filter = "Comma Separated Values (*.csv)|*.csv";
+
+            if (openFileDialog1.ShowDialog() == DialogResult.OK)
+            {
+                Controller2MappingTextBox.Text = openFileDialog1.FileName;
+                InitPlayers();
+            }
+        }
+
+        private void BehaviorBrowse_Click(object sender, EventArgs e)
+        {
+            openFileDialog1.Multiselect = false;
+            openFileDialog1.CheckFileExists = true;
+            openFileDialog1.Filter = "BulletHellFish Behaviors (*.bhf)|*.bhf";
+
+            if (openFileDialog1.ShowDialog() == DialogResult.OK)
+            {
+                BehaviorTextBox.Text = openFileDialog1.FileName;
+                InitPlayers();
+            }
+        }
     }
 }

@@ -1,116 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
-namespace WindowsFormsApplication1
+namespace BulletHellFish
 {
     class BehaviorInterpreter
     {
 
-
         const string QUOTE = "\"";
-
-        class Keywords
-        {
-            public const string If = "if";
-            public const string Repeat = "repeat";
-            public const string Try = "try";
-            public const string Times = "times|time";
-            public const string Wait = "wait";
-            public const string Press = "press";
-            public const string Seconds = "s|second|seconds";
-            public const string Milliseconds = "ms|millisecond|milliseconds";
-            public const string Int = "int|integer";
-            public const string Bool = "bool|boolean|yesno";
-            public const string Str = "str|string|phrase";
-            public const string Lock = "lock";
-            public const string Unlock = "unlock";
-            public const string EqualsSymbol = "=|is|equals|set";
-            public const string InferVar = "var|auto";
-            public const string IsSimilarTo = "similar";
-            public const string InAt = "in|at";
-            public const string False = "0|false|no";
-            public const string True = "1|true|yes";
-
-            public const string BoolValue = True + "|" + False;
-            public const string Vars = Int + "|" + Bool + "|" + Str + "|" + InferVar;
-
-        }
-
-        class Variables
-        {
-            Dictionary<string, int> ints = new Dictionary<string, int>();
-            Dictionary<string, string> strings = new Dictionary<string, string>();
-            Dictionary<string, bool> bools = new Dictionary<string, bool>();
-
-            public int GetInt(string name)
-            {
-                int var;
-                if(ints.TryGetValue(name, out var))
-                {
-                    return var;
-                }
-                return 0;
-            }
-
-            public string GetString(string name)
-            {
-                string var;
-                if (strings.TryGetValue(name, out var))
-                {
-                    return var;
-                }
-                return "";
-            }
-
-            public bool GetBool(string name)
-            {
-                bool var;
-                if (bools.TryGetValue(name, out var))
-                {
-                    return var;
-                }
-                return false;
-            }
-
-            public void SetInt(string name, int value)
-            {
-                ints[name] = value;
-            }
-     
-            public void SetBool(string name, bool value)
-            {
-                bools[name] = value;
-            }
-
-            public void SetString(string name, string value)
-            {
-                strings[name] = value;
-            }
-
-            public bool Exists(string name) {
-                return ints.ContainsKey(name) || bools.ContainsKey(name) || strings.ContainsKey(name);
-            }
-
-            public bool ExistsAsString(string name)
-            {
-                return strings.ContainsKey(name);
-            }
-            public bool ExistsAsBool(string name)
-            {
-                return bools.ContainsKey(name);
-            }
-            public bool ExistsAsInt(string name)
-            {
-                return ints.ContainsKey(name);
-            }
-
-        }
-
-        Variables vars = new Variables();
+   
+        VariablesStack vars = new VariablesStack();
         Behavior behavior;
         string[] program;
 
@@ -143,18 +42,17 @@ namespace WindowsFormsApplication1
                 string line = program[i];
                 programCounter = currentLine + i;
 
-                i += ExecLine(line).Key;
+                i += Eval(line).Key;
 
             }
 
             return true;
 
         }
-
-
+        
         // Key: number of line executed
         // Value: operation outcome
-        private KeyValuePair<int, object> ExecLine(string line)
+        private KeyValuePair<int, object> Eval(string line)
         {
             int lineExecuted = 1;
             object result = null;
@@ -257,7 +155,7 @@ namespace WindowsFormsApplication1
             string value = "";
             if (components.Length > 3 && StartsWithOneOf(components[2], Keywords.EqualsSymbol))
             {
-                value = components[3];
+                value = Merge(components, 3);
                 SetVar(type, name, value);
             }
             else if (!StartsWithOneOf(type, Keywords.InferVar))
@@ -273,11 +171,10 @@ namespace WindowsFormsApplication1
 
         private void SetVar(string line) {
             string[] components = TrimSplit(line);
-            if(components.Length>2)
+            if(components.Length > 2)
             {
-                SetVar("var", components[0], components[2]);
+                SetVar("var", components[0], Merge(components, 2));
             }
-
         }
 
         private void RepeatLoop(string line, string[] content, int currentLine)
@@ -335,43 +232,53 @@ namespace WindowsFormsApplication1
                     return;
                 }
 
-            }
+                // Is a StringVariable
+                if (vars.ExistsAsString(value))
+                {
+                    vars.SetString(name, vars.GetString(value));
+                    return;
+                }
 
-            // I finished inferring things. Still, could be:
-            // 1. A variable;
-            // 2. An expression;
-            // 3. Trying to put an int in a "string" var;
-            // 4. A non-valid sequence of characters;
+                // Is a BoolVariable
+                if (vars.ExistsAsBool(value))
+                {
+                    vars.SetBool(name, vars.GetBool(value));
+                    return;
+                }
 
-            // 1. Is it a variable?
-            if (vars.ExistsAsString(value)) {
-                vars.SetString(name, vars.GetString(value));
-                return;
-            }
+                // Is an IntVariable
+                if (vars.ExistsAsInt(value))
+                {
+                    vars.SetInt(name, vars.GetInt(value));
+                    return;
+                }
 
-            if (vars.ExistsAsBool(value))
+                // It is a literal int, but the variable is a string.
+                if (StartsWithOneOf(type, Keywords.Str) && itsAnInt)
+                {
+                    vars.SetString(name, value);
+                    return;
+                }
+
+            } else
             {
-                vars.SetBool(name, vars.GetBool(value));
-                return;
+                // Value it's an expression;
+                KeyValuePair<int, object> result = Eval(value);
+                Type t = result.Value.GetType();
+
+                if (t == typeof(int)) {
+                    SetVar("int", name, result.Value.ToString());
+                } else if (t == typeof(bool))
+                {
+                    SetVar("bool", name, result.Value.ToString());
+                }
+                else if(t == typeof(string)) {
+                    SetVar("str", name, result.Value.ToString());
+                }
+
             }
 
-            if (vars.ExistsAsInt(value))
-            {
-                vars.SetInt(name, vars.GetInt(value));
-                return;
-            }
-
-            // 2. Is it an expression?
-            // TODO
-
-            // 3. Trying put int in string
-            if(StartsWithOneOf(type, Keywords.Str) && itsAnInt)
-            {
-                vars.SetString(name, value);
-                return;
-            }
-
-            // 4. A non-valid sequence of characters;
+           
             Error();
 
         }
@@ -430,13 +337,11 @@ namespace WindowsFormsApplication1
                 return false;
             } else {
                 string image = EvaluateAsString(new string[]{ Trim(fields[0]) });
-                bool multicheck = image.EndsWith("*");
-
 
                 if (fields.Length == 1)
                 {
                     // Done! Just give the image to the behavior!
-                    return behavior.IsSimilarTo(image, multicheck);
+                    return behavior.IsSimilarTo(image);
                 }
                 else if (fields.Length == 2) {
                     string second = Trim(fields[1]);
@@ -444,12 +349,12 @@ namespace WindowsFormsApplication1
                     {
                         // Then program, asks for rectangle.
                         System.Drawing.Rectangle rect = GetRect(RemoveFirst(TrimSplit(second)));
-                        return behavior.IsSimilarTo(image, multicheck, rect);
+                        return behavior.IsSimilarTo(image, rect);
                     }
                     else {
                         // probably percentage, but for now:
 
-                        return behavior.IsSimilarTo(image, multicheck);
+                        return behavior.IsSimilarTo(image);
 
                     }
 
@@ -466,6 +371,8 @@ namespace WindowsFormsApplication1
 
         }
 
+
+        #region Eval
         private int EvaluateAsInt(string[] components)
         {
             if(components.Length == 0)
@@ -517,6 +424,8 @@ namespace WindowsFormsApplication1
             return "";
         }
 
+        #endregion
+
         private void Error()
         {
 
@@ -544,6 +453,30 @@ namespace WindowsFormsApplication1
             }
 
             return content.ToArray();
+        }
+
+        private string Merge(string[] components, int start, int length) {
+            string result = "";
+            int L = components.Length;
+            if (start < L)
+            {
+                int realLength = length;
+                if(start+length > L)
+                {
+                    realLength = L - start;
+                }
+
+                for(int i = start; i< realLength+start; i++)
+                {
+                    result += components[i] + " ";
+                }
+            }
+            return Trim(result);
+        }
+
+        private string Merge(string[] components, int start)
+        {
+            return Merge(components, start, components.Length);
         }
 
         private int GetLineLevel(string line)
