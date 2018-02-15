@@ -493,8 +493,7 @@
             this.Controller1MappingTextBox.Name = "Controller1MappingTextBox";
             this.Controller1MappingTextBox.Size = new System.Drawing.Size(145, 20);
             this.Controller1MappingTextBox.TabIndex = 21;
-            this.Controller1MappingTextBox.Text = "C:\\Users\\Simone Chelo\\Documents\\BulletHellFish\\Input Sheets\\PSX Input Sheet P1.cs" +
-    "v";
+            this.Controller1MappingTextBox.Text = "..\\..\\..\\Input Sheets\\PSX Input Sheet P1.csv";
             // 
             // label10
             // 
@@ -512,8 +511,7 @@
             this.Controller2MappingTextBox.Name = "Controller2MappingTextBox";
             this.Controller2MappingTextBox.Size = new System.Drawing.Size(145, 20);
             this.Controller2MappingTextBox.TabIndex = 31;
-            this.Controller2MappingTextBox.Text = "C:\\Users\\Simone Chelo\\Documents\\BulletHellFish\\Input Sheets\\PSX Input Sheet P2.cs" +
-    "v";
+            this.Controller2MappingTextBox.Text = "..\\..\\..\\Input Sheets\\PSX Input Sheet P2.csv";
             // 
             // label11
             // 
@@ -531,7 +529,7 @@
             this.BehaviorTextBox.Name = "BehaviorTextBox";
             this.BehaviorTextBox.Size = new System.Drawing.Size(145, 20);
             this.BehaviorTextBox.TabIndex = 33;
-            this.BehaviorTextBox.Text = "C:\\Users\\Simone Chelo\\Documents\\BulletHellFish\\Behaviors\\Behavior.bhf";
+            this.BehaviorTextBox.Text = "..\\..\\..\\Behaviors\\Behavior.bhf";
             // 
             // Controller1Browse
             // 

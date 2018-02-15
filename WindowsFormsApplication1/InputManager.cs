@@ -28,7 +28,7 @@ namespace BulletHellFish
 
         private Random r = new Random();
         public bool TwoHandMode = false;
-        public bool SendWithDirectX = true;
+        private bool SendWithDirectX = false;
 
         public const string START   = "START";
         public const string SELECT  = "SELECT";

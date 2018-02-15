@@ -31,8 +31,8 @@ namespace BulletHellFish
         private string EmuWindowTitle;
         private int OriginalLeftInputLabelWidth;
 
-        Player player1;// = new Player(new PSXInputBoard("C:\\Users\\simc\\Desktop\\The Bullet Hell Fish\\Input Sheets\\PSX Input Sheet P1.csv"));
-        Player player2;// = new Player(new PSXInputBoard("C:\\Users\\simc\\Desktop\\The Bullet Hell Fish\\Input Sheets\\PSX Input Sheet P2.csv"));
+        Player player1;
+        Player player2;
 
         IntPtr GameEmuHandle = IntPtr.Zero;
 
@@ -42,7 +42,7 @@ namespace BulletHellFish
             InitializeComponent();
             
             // StdWindow
-            WindowNameDropDown.Text = "PCSXR";
+            WindowNameDropDown.Text = "pcsx2-r4600";
 
             InitPlayers();
         }
@@ -166,6 +166,15 @@ namespace BulletHellFish
 
                         string[] nextCombo = inputBoard.NextCombo(hand);
 
+                        if (!Behavior.IsLocked())
+                        {
+                            inputBoard.PressCombo(nextCombo, minHoldTime, maxHoldTime);
+                        } else
+                        {
+                            continue;
+                        }
+
+
                         Invoke(new Action(() =>
                         {
                             string inputName = inputBoard.ComboName(nextCombo);
@@ -183,23 +192,8 @@ namespace BulletHellFish
                                 Utils.fillWithDate(FastClockTextBox, secondsElapsed * multiplier + startGameMS);
                             }
 
-                            StartAnArcadeBehavior arcadeBehavior = inputBoard.getBehavior<StartAnArcadeBehavior>();
-                            if (arcadeBehavior != null) {
-                                arcadeTextBox.Text = (arcadeBehavior.ArcadeStarted + arcades).ToString();
-                            }
-
-                            PressStartToContinueSoulcaliburIIIBehavior continueBehavior = inputBoard.getBehavior<PressStartToContinueSoulcaliburIIIBehavior>();
-                            if (continueBehavior != null)
-                            {
-                                continuesTextBox.Text = (continueBehavior.Continues + continues).ToString();
-                            }
 
                         }));
-                        
-
-                        if(!Behavior.IsLocked()) { 
-                           // inputBoard.PressCombo(nextCombo, minHoldTime, maxHoldTime);
-                        }
 
                         Thread.Sleep(sleepTime);
                     }
@@ -284,15 +278,24 @@ namespace BulletHellFish
                 }
             }
 
+            WindowNameDropDown.Items.Add("  ");
             WindowNameDropDown.Items.Add(" - Processes - ");
 
+            List<string> strings = new List<string>();
 
             foreach (Process process in processlist)
             {
                 if (!string.IsNullOrEmpty(process.ProcessName))
                 {
-                    WindowNameDropDown.Items.Add(process.ProcessName);
+                    strings.Add(process.ProcessName);
                 }
+            }
+
+            strings.Sort();
+
+            foreach (string process in strings)
+            {
+                WindowNameDropDown.Items.Add(process);
             }
         }
 

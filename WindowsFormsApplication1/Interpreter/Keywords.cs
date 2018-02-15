@@ -24,5 +24,17 @@
 
         public const string BoolValue = True + "|" + False;
         public const string Vars = Int + "|" + Bool + "|" + Str + "|" + InferVar;
+
+
+        public const string Or = "or";
+        public const string And = "and|&";
+
+        public const string LogicOperation = Or + "|" + And;
+
+
+        public const string Plus = "+|plus";
+        public const string Minus = "-|minus";
+
+        public const string MathOperation = Plus + "|" + Minus;
     }
 }

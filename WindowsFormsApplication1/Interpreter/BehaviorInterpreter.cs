@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
+using Result = System.Collections.Generic.KeyValuePair<int, object>;
 
 namespace BulletHellFish
 {
@@ -25,7 +26,7 @@ namespace BulletHellFish
             Press, Behave, Unbehave, Wait, If, 
             DeclareVar, SetVar, GetVar, IncreaseVar, DecreaseVar,
             MathOperation, Comment, Lock, Unlock,
-            IsSimilarTo
+            IsSimilarTo, LogicOperation
         }
 
         int programCounter = 0;
@@ -52,10 +53,12 @@ namespace BulletHellFish
         
         // Key: number of line executed
         // Value: operation outcome
-        private KeyValuePair<int, object> Eval(string line)
+        private Result Eval(string line)
         {
+            string[] content = GetContentInside(line);
             int lineExecuted = 1;
             object result = null;
+
             switch (TypeOf(line))
             {
                 case LineType.SetVar:
@@ -65,7 +68,6 @@ namespace BulletHellFish
                     DeclareVar(line);
                     break;
                 case LineType.RepeatLoop:
-                    string[] content = GetContentInside(line);
                     RepeatLoop(line, content, programCounter);
                     lineExecuted = content.Length;
                     break;
@@ -81,11 +83,21 @@ namespace BulletHellFish
                 case LineType.Unlock:
                     Behavior.Unlock();
                     break;
+                case LineType.If:
+                    If(line, content, programCounter);
+                    lineExecuted = content.Length;
+                    break;
                 case LineType.IsSimilarTo:
                     result = IsSimilarTo(line);
                     break;
+                case LineType.MathOperation:
+                    result = MathOperation(line);
+                    break;
+                case LineType.LogicOperation:
+                    result = LogicOperation(line);
+                    break;
             }
-            return new KeyValuePair<int, object>(lineExecuted, result);
+            return new Result(lineExecuted, result);
         }
 
         private LineType TypeOf (string rawLine)
@@ -138,6 +150,16 @@ namespace BulletHellFish
             if (ContainsOneOf(line, Keywords.IsSimilarTo))
             {
                 return LineType.IsSimilarTo;
+            }
+
+            if (ContainsOneOf(line, Keywords.LogicOperation))
+            {
+                return LineType.LogicOperation;
+            }
+
+            if (ContainsOneOf(line, Keywords.MathOperation))
+            {
+                return LineType.MathOperation;
             }
 
 
@@ -194,6 +216,18 @@ namespace BulletHellFish
 
         }
 
+        private void If(string line, string[] content, int currentLine)
+        {
+            string[] components = RemoveFirst(TrimSplit(line)); // Ignoring keyword
+            bool value = EvaluateAsBool(components);
+
+            if(value)
+            {
+                Execute(content, currentLine + 1);
+            }
+
+        }
+
         private void SetVar(string type, string name, string value)
         {
 
@@ -206,7 +240,7 @@ namespace BulletHellFish
                 isBool = isBool || (StartsWithOneOf(type, Keywords.InferVar) && StartsWithOneOf(value, Keywords.BoolValue)); // declared as Var, but inferred as bool
                 if (isBool)
                 {
-                    vars.SetBool(name, !StartsWithOneOf(value, Keywords.False));
+                    vars.SetBool(name, StringToBool(value));
                     return;
                 }
 
@@ -263,7 +297,7 @@ namespace BulletHellFish
             } else
             {
                 // Value it's an expression;
-                KeyValuePair<int, object> result = Eval(value);
+                Result result = Eval(value);
                 Type t = result.Value.GetType();
 
                 if (t == typeof(int)) {
@@ -281,6 +315,55 @@ namespace BulletHellFish
            
             Error();
 
+        }
+
+        private int MathOperation(string line)
+        {
+            // TODO;
+            string[] fields = SplitByAnyOf(line, Keywords.MathOperation);
+            return 1;
+        }
+
+        private bool LogicOperation(string line)
+        {
+            string[] fields = SplitByAnyOf(line, Keywords.LogicOperation);
+            string[] fieldsWithOp = TrimSplit(line);
+
+            if (fieldsWithOp.Length == 0) return false;
+            if (fieldsWithOp.Length == 1 || fieldsWithOp.Length == 2) return EvaluateAsBool(new string[] { fields[0] });
+
+            bool val = LogicOperationTriplette(fieldsWithOp);
+
+            /*for (int i = 0; i < fieldsWithOp.Length - 1; i++)
+            {
+
+            }*/
+
+            return val;
+        }
+
+        // Operate only the first 3
+        private bool LogicOperationTriplette(string[] lines)
+        {
+            if (lines.Length < 3) return false;
+            string op = lines[1];
+            bool val1 = EvaluateAsBool(new string[] { lines[0] });
+            bool val2 = EvaluateAsBool(new string[] { lines[2] });
+
+
+            if (IsOneOf(op, Keywords.Or))
+            {
+                return val1 || val2;
+            }
+
+            if (IsOneOf(op, Keywords.And))
+            {
+                return val1 && val2;
+            }
+
+
+            Error();
+            return false;
         }
 
 
@@ -373,6 +456,50 @@ namespace BulletHellFish
 
 
         #region Eval
+
+        private bool EvaluateAsBool(string[] components)
+        {
+            if (components.Length == 0)
+            {
+                Error();
+                return false;
+            }
+
+            if (components.Length == 1)
+            {
+                string val = components[0];
+                if (IsOneOf(val, Keywords.BoolValue))
+                {
+                    return StringToBool(val);
+                }
+                else if (vars.ExistsAsBool(val))
+                {
+                    return vars.GetBool(val);
+                } else
+                {
+                    Error();
+                    return false;
+                }
+            }
+
+            Result e = Eval(Merge(components, 0));
+            if(e.Value.GetType() == typeof(bool))
+            {
+                return (bool)e.Value;
+            } else
+            {
+                Error();
+                return false;
+            }
+                 
+        }
+
+        private bool StringToBool(string val)
+        {
+            return !IsOneOf(val, Keywords.False);
+        }
+
+
         private int EvaluateAsInt(string[] components)
         {
             if(components.Length == 0)
@@ -415,7 +542,7 @@ namespace BulletHellFish
                 }
                 else
                 {
-                    return val;
+                    return RemoveQuotes(val);
                 }
             }
 
@@ -586,11 +713,14 @@ namespace BulletHellFish
 
         public bool ContainsOneOf(string line, string[] strs)
         {
-
+            string[] components = TrimSplit(line);
             foreach (string str in strs)
             {
                 // TODO: check not in strings
-                if (line.Contains(str)) return true;
+                foreach (string component in components)
+                {
+                    if (component.Equals(str)) return true;
+                }
             }
 
             return false;
@@ -612,6 +742,26 @@ namespace BulletHellFish
 
         }
 
+        public bool IsOneOf(string line, string[] strs)
+        {
+
+            foreach (string str in strs)
+            {
+                if (line.Equals(str))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+
+        }
+
+
+        public bool IsOneOf(string line, string strs)
+        {
+            return IsOneOf(line, strs.Split('|'));
+        }
 
         public string[] SplitByAnyOf(string line, string strs)
         {
