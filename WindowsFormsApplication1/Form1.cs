@@ -50,10 +50,10 @@ namespace BulletHellFish
         private void InitPlayers()
         {
             if (!string.IsNullOrWhiteSpace(Controller1MappingTextBox.Text))
-                player1 = new Player(new PSXInputBoard(Controller1MappingTextBox.Text));
+                player1 = new Player(new PSXInputBoard(Controller1MappingTextBox.Text), 1);
 
             if (!string.IsNullOrWhiteSpace(Controller2MappingTextBox.Text))
-                player2 = new Player(new PSXInputBoard(Controller2MappingTextBox.Text));
+                player2 = new Player(new PSXInputBoard(Controller2MappingTextBox.Text), 2);
 
             if (player1 == null)
                 return;
@@ -72,6 +72,14 @@ namespace BulletHellFish
             // TwoHandMode
             OriginalLeftInputLabelWidth = LeftInputLabel.Width;
             TwoHandsCheckBox_CheckedChanged(null, null);
+        }
+
+        internal InputParameters GetInputParameters(Hand hand)
+        {
+            bool leftSide = hand == Hand.Left;
+            return new InputParameters( Utils.IntFromTextBox(leftSide ? HoldTimeLeftFrom : HoldTimeRightFrom, 50),
+                                        Utils.IntFromTextBox(leftSide ? HoldTimeLeftTo : HoldTimeRightTo, 50),
+                                        Utils.IntFromTextBox(leftSide ? SleepTimeLeftTextBox : SleepTimeRightTextBox, 0));
         }
 
         private void button1_Click(object sender, EventArgs e)
@@ -124,6 +132,10 @@ namespace BulletHellFish
             SpeedMultiplierTextBox.Enabled = false;
             SetForegroundWindow(GameEmuHandle);
 
+            // Form Update Action
+            
+
+
             // Input threads
             player1.Play(GameEmuHandle, this, true);
             
@@ -134,86 +146,43 @@ namespace BulletHellFish
             
         }
 
-        public Thread CreateThread(IntPtr emuHandle, Hand hand, bool main, InputBoard inputBoard) {
-            return new Thread(() =>
+
+        public void UpdateForm(string inputName, Hand hand, bool main, int playerId)
+        {
+
+            bool leftSide = hand == Hand.Left;
+            Label label = leftSide ? LeftInputLabel : RightInputLabel;
+
+            int multiplier = Utils.IntFromTextBox(SpeedMultiplierTextBox, 1);
+            long startGameMS = Utils.parseHourToMilliseconds(FastClockTextBox);
+            long startRealMS = Utils.parseHourToMilliseconds(NormalClockTextBox);
+            long startWorldMS = Utils.millisecondsSinceEpoch();
+
+            Action action = new Action(() =>
             {
-                bool leftSide = hand == Hand.Left;
-                Label label = leftSide ? LeftInputLabel : RightInputLabel;
+                //string inputName = inputBoard.ComboName(nextCombo);
+                label.Text = inputName;
 
-                Thread.CurrentThread.IsBackground = true;
-
-                // Vars
-                int multiplier = Utils.IntFromTextBox(SpeedMultiplierTextBox, 1);
-                int minHoldTime = Utils.IntFromTextBox(leftSide ? HoldTimeLeftFrom : HoldTimeRightFrom, 50);
-                int maxHoldTime = Utils.IntFromTextBox(leftSide ? HoldTimeLeftTo : HoldTimeRightTo, 50);
-                int sleepTime = Utils.IntFromTextBox(leftSide? SleepTimeLeftTextBox : SleepTimeRightTextBox, 0);
-                long startGameMS = Utils.parseHourToMilliseconds(FastClockTextBox);
-                long startRealMS = Utils.parseHourToMilliseconds(NormalClockTextBox);
-                long startWorldMS = Utils.millisecondsSinceEpoch();
-
-                int continues = Utils.IntFromTextBox(continuesTextBox, 0);
-                int arcades = Utils.IntFromTextBox(arcadeTextBox, 0);
-                
-                while (true)
+                if (!string.IsNullOrEmpty(inputName))
                 {
-                    if (Utils.GetWindowCaption(emuHandle).Equals(Utils.GetWindowCaption(GetForegroundWindow())))
-                    {
-
-                        if(main) {
-                            bool somethingHappened = inputBoard.ExecAdditionalBehaviors();
-                            if (somethingHappened) continue;
-                        }
-
-                        string[] nextCombo = inputBoard.NextCombo(hand);
-
-                        if (!Behavior.IsLocked())
-                        {
-                            inputBoard.PressCombo(nextCombo, minHoldTime, maxHoldTime);
-                        } else
-                        {
-                            continue;
-                        }
-
-
-                        Invoke(new Action(() =>
-                        {
-                            string inputName = inputBoard.ComboName(nextCombo);
-                            label.Text = inputName;
-
-                            if(!string.IsNullOrEmpty(inputName)) {
-                                HistoryListBox.Items.Add(inputName);
-                                int visibleItems = HistoryListBox.ClientSize.Height / HistoryListBox.ItemHeight;
-                                HistoryListBox.TopIndex = Math.Max(HistoryListBox.Items.Count - visibleItems + 1, 0);
-                            }
-
-                            if (main) { 
-                                long secondsElapsed = Utils.millisecondsSinceEpoch() - startWorldMS;
-                                Utils.fillWithDate(NormalClockTextBox, secondsElapsed + startRealMS);
-                                Utils.fillWithDate(FastClockTextBox, secondsElapsed * multiplier + startGameMS);
-                            }
-
-
-                        }));
-
-                        Thread.Sleep(sleepTime);
-                    }
-                    else
-                    {
-                        if (!Text.Equals(Utils.GetWindowCaption(GetForegroundWindow())))
-                        {
-                            SetForegroundWindow(emuHandle);
-                        }
-                        else
-                        {
-                            Pause();
-                        }
-                    }
+                    HistoryListBox.Items.Add(inputName);
+                    int visibleItems = HistoryListBox.ClientSize.Height / HistoryListBox.ItemHeight;
+                    HistoryListBox.TopIndex = Math.Max(HistoryListBox.Items.Count - visibleItems + 1, 0);
                 }
 
+                if (main)
+                {
+                    long secondsElapsed = Utils.millisecondsSinceEpoch() - startWorldMS;
+                    Utils.fillWithDate(NormalClockTextBox, secondsElapsed + startRealMS);
+                    Utils.fillWithDate(FastClockTextBox, secondsElapsed * multiplier + startGameMS);
+                }
             });
-        }
 
-        private void Pause()
+            Invoke(action);
+        }
+        
+
+        public void Pause()
         {
             Invoke(new Action(() =>
             {
@@ -222,9 +191,8 @@ namespace BulletHellFish
                 LeftInputLabel.Text = "-Paused-";
                 StartPauseButton.Text = "Start";
 
-
-                player1.Pause();
-                player2.Pause();
+                if (player1 != null) player1.Pause();
+                if (player2 != null) player2.Pause();
 
             }));
         }

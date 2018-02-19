@@ -38,7 +38,7 @@ namespace BulletHellFish
 
         private bool Execute(string[] program, int currentLine)
         {
-            for (int i = 0; i < program.Length; i++)
+            for (int i = 0; i < program.Length;)
             {
                 string line = program[i];
                 programCounter = currentLine + i;
@@ -69,7 +69,7 @@ namespace BulletHellFish
                     break;
                 case LineType.RepeatLoop:
                     RepeatLoop(line, content, programCounter);
-                    lineExecuted = content.Length;
+                    lineExecuted = content.Length+1;
                     break;
                 case LineType.Wait:
                     Wait(line);
@@ -85,7 +85,7 @@ namespace BulletHellFish
                     break;
                 case LineType.If:
                     If(line, content, programCounter);
-                    lineExecuted = content.Length;
+                    lineExecuted = content.Length+1;
                     break;
                 case LineType.IsSimilarTo:
                     result = IsSimilarTo(line);
@@ -237,7 +237,7 @@ namespace BulletHellFish
 
                 // Is Bool or Inferred as bool: 
                 bool isBool = StartsWithOneOf(type, Keywords.Bool); // Declared as bool
-                isBool = isBool || (StartsWithOneOf(type, Keywords.InferVar) && StartsWithOneOf(value, Keywords.BoolValue)); // declared as Var, but inferred as bool
+                isBool = isBool || (StartsWithOneOf(type, Keywords.InferVar) && IsOneOf(value, Keywords.BoolValue)); // declared as Var, but inferred as bool
                 if (isBool)
                 {
                     vars.SetBool(name, StringToBool(value));
@@ -747,7 +747,7 @@ namespace BulletHellFish
 
             foreach (string str in strs)
             {
-                if (line.Equals(str))
+                if (line.ToLower().Equals(str.ToLower()))
                 {
                     return true;
                 }

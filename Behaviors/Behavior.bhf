@@ -1,12 +1,10 @@
-﻿bool victoryScreen = "victory_screen" similar in 77 620 1253 116
+﻿bool victoryScreen = "victory_screen" similar in 57 460 917 80
 bool drawScreen = "draw_screen" similar in 510 624 383 106
-bool yace = true
 
-if victoryScreen or yace
+if victoryScreen or drawScreen
 	lock
 		press START
 		wait 1 second
 		press X
 	unlock
-	behave
-
+	
