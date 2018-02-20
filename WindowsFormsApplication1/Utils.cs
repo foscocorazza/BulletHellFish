@@ -1,5 +1,7 @@
-﻿using Microsoft.VisualBasic.FileIO;
+﻿using BulletHellFish;
+using Microsoft.VisualBasic.FileIO;
 using System;
+using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
@@ -7,7 +9,7 @@ using System.Windows.Forms;
 
 namespace BulletHellFish
 {
-    class Utils
+    public static class Utils
     {
         [DllImport("user32.dll")]
         static extern int GetWindowText(IntPtr hWnd, StringBuilder text, int count);
@@ -78,5 +80,34 @@ namespace BulletHellFish
                 t = null;
             }
         }
+
+
+        public static List<Control> GetAllControls(this Control container, bool excludeSensible)
+        {
+            List<Control> controlList = new List<Control>();
+            controlList.Add(container);
+            foreach (Control c in container.Controls)
+            {
+                controlList.AddRange(GetAllControls(c, excludeSensible));
+                bool sensible = c is Button || c is ComboBox || c is ListBox || c is TextBox;
+                if (!excludeSensible || !sensible)
+                {
+                    controlList.Add(c);
+                }
+            }
+            return controlList;
+        }
+
+
+        public static Control GetSonTagged(this Control container, string tag)
+        {
+            List<Control> controlList = container.GetAllControls(false);
+            foreach (Control c in container.Controls)
+            {
+                if (tag.Equals(c.Tag)) return c;
+            }
+            return null;
+        }
+        
     }
 }

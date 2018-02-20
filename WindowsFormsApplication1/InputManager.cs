@@ -1,6 +1,7 @@
 ﻿using Microsoft.VisualBasic.FileIO;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -26,7 +27,19 @@ namespace BulletHellFish
         private HashSet<string> leftInputs = new HashSet<string>();
         private HashSet<string[]> combos = new HashSet<string[]>();
 
-        private Random r = new Random();
+
+        private HashSet<string[]> combosLeft = new HashSet<string[]>();
+        private HashSet<string[]> combosRight = new HashSet<string[]>();
+        
+        private HashSet<string[]> GetCombos(Hand hand)
+        {
+            if (hand == Hand.Left) return combosLeft;
+            return combosRight;
+        }
+
+
+        private Random LeftRandom = new Random();
+        private Random RightRandom = new Random();
         public bool TwoHandMode = false;
         private bool SendWithDirectX = false;
 
@@ -47,10 +60,22 @@ namespace BulletHellFish
 
         public void Enable(string value) {
             enabledInputs.Add(value);
+
+            foreach (string[] combo in combos)
+            {
+                if (combo.Contains(value))
+                {
+                    GetCombos(GetHand(combo)).Add(combo);
+                }
+            }
         }
 
         public void Disable(string value) {
             enabledInputs.Remove(value);
+            
+            combosLeft  = new HashSet<string[]>(combosLeft.Where(val => !val.Contains(value)));
+            combosRight = new HashSet<string[]>(combosRight.Where(val => !val.Contains(value)));
+
         }
 
         public List<string> EveryInput() {
@@ -94,6 +119,30 @@ namespace BulletHellFish
         protected void AddCombo(params string[] keys)
         {
             combos.Add(keys);
+            
+            if(GetHand(keys) == Hand.Left)
+            {
+                combosLeft.Add(keys);
+            } else
+            {
+                combosRight.Add(keys);
+            }
+        }
+
+        private Hand GetHand(string[] keys)
+        {
+            int lefts = 0;
+            int rights = 0;
+
+            foreach (string key in keys)
+            {
+                if (leftInputs.Contains(key))
+                    lefts++;
+                else
+                    rights++;
+            }
+
+            return lefts > rights ? Hand.Left : Hand.Right;
         }
 
         protected bool isRight(string value)
@@ -109,20 +158,20 @@ namespace BulletHellFish
 
         public void PressStart()
         {
-            Press(START, 150, 150);
+            Press(START, 150, 150, Hand.Left);
         }
 
         public abstract void PressConfirm();
         
 
-        public void Press(string key, int minHoldTime, int maxHoldTime)
+        public void Press(string key, int minHoldTime, int maxHoldTime, Hand hand)
         {
 
-            PressCombo(new string[] { key }, minHoldTime, maxHoldTime);
+            PressCombo(new string[] { key }, minHoldTime, maxHoldTime, hand);
 
         }
 
-        public void PressCombo(string[] combo, int minHoldTime, int maxHoldTime)
+        public void PressCombo(string[] combo, int minHoldTime, int maxHoldTime, Hand hand)
         {
 
             List<VirtualKeyCode> vkcodes = new List<VirtualKeyCode>();
@@ -131,10 +180,15 @@ namespace BulletHellFish
                     vkcodes.Add(keys[key]);
                 }
             }
-            SendInputWrapper.PressCombo(vkcodes.ToArray(), minHoldTime, maxHoldTime, SendWithDirectX, r);
+            SendInputWrapper.PressCombo(vkcodes.ToArray(), minHoldTime, maxHoldTime, SendWithDirectX, GetRandom(hand));
 
 
 
+        }
+
+        private Random GetRandom(Hand hand)
+        {
+            return hand == Hand.Left ? LeftRandom : RightRandom;
         }
 
         public void ClearBehaviors()
@@ -166,12 +220,7 @@ namespace BulletHellFish
             string nextInput;
             do
             {
-                object syncLock = new object();
-                int i;
-                lock (syncLock)
-                {
-                    i = r.Next(0, keys.Keys.Count);
-                }
+                int i = GetRandom(hand).Next(0, keys.Keys.Count);
                 nextInput = keys.Keys.ElementAt(i);
             } while (!IsValid(nextInput, hand));
             return nextInput;
@@ -182,15 +231,19 @@ namespace BulletHellFish
             string[] nextInput;
             do
             {
-                object syncLock = new object();
-                int i;
-                lock (syncLock)
-                {
-                    i = r.Next(0, combos.Count);
-                }
-                nextInput = combos.ElementAt(i);
+                int i = GetRandom(hand).Next(0, GetCombos(hand).Count);
+                nextInput = GetCombos(hand).ElementAt(i);
             } while (!IsValid(nextInput, hand));
             return nextInput;
+        }
+
+        public string[] NextComboFromNormalizedData(Hand hand, double normData)
+        {
+            int fourDecimals = ((int)(normData * 10000)) % 10000; // 0000-9999
+            int twoDecimals = hand == Hand.Left ? (fourDecimals % 100) : (fourDecimals / 100); // 00-99
+            int newIndex = (int)(((float)(GetCombos(hand).Count - 1) / (float)99) * twoDecimals);
+            return GetCombos(hand).ElementAt(newIndex);
+
         }
 
         public string InputName(string nextInput)
@@ -248,19 +301,11 @@ namespace BulletHellFish
 
         private void LoadFrom(string FilePath)
         {
-            using (TextFieldParser parser = new TextFieldParser(FilePath))
-            {
-                parser.TextFieldType = FieldType.Delimited;
-                parser.SetDelimiters("_");
-
-                string Mapping = "MappingMode";
-                string Combos = "ComboMode";
-                string Mode = Mapping;
-
-                while (!parser.EndOfData)
-                {
-                    string[] fields = parser.ReadFields();
-                    foreach (string raw in fields)
+            string Mapping = "MappingMode";
+            string Combos = "ComboMode";
+            string Mode = Mapping;
+            
+                    foreach (string raw in File.ReadAllLines(FilePath))
                     {
                         string field = raw.Trim().ToUpper();
                         
@@ -316,8 +361,6 @@ namespace BulletHellFish
 
 
                     }
-                }
-            }
 
             EnableEverything();
             setAnyOtherKeyAsJolly();
@@ -336,7 +379,7 @@ namespace BulletHellFish
 
         public override void PressConfirm()
         {
-            Press("X", 150, 150);
+            Press("X", 150, 150, Hand.Right);
         }
 
     }

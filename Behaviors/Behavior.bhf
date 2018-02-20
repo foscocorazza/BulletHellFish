@@ -2,9 +2,11 @@
 bool drawScreen = "draw_screen" similar in 510 624 383 106
 
 if victoryScreen or drawScreen
-	lock
-		press START
+	lock input
 		wait 1 second
+		press START
+		wait 3 second
 		press X
-	unlock
+		wait 100 ms
+	unlock input
 	

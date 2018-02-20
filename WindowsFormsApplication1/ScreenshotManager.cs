@@ -13,8 +13,8 @@ namespace BulletHellFish
 {
     class ScreenshotManager
     {
-        private static readonly string ActualScreenPath = "actual_screen.jpg";
-        private static readonly string StartScreenPath = "start_screen.jpg";
+        private static readonly string EXT = "png";
+        private static readonly string ActualScreenPath = "actual_screen."+EXT;
         private static readonly Rectangle NullRectangle = new Rectangle(-1,-1,-1,-1);
 
         [DllImport("user32.dll")]
@@ -47,13 +47,16 @@ namespace BulletHellFish
             return myRect;
         }
 
-        public static bool ThisScreenPresent(string thisPath, IntPtr emuHandle, Rectangle bounder, double similarity = 0.8 )
+        public static bool ThisScreenPresent(string folder, string thisPath, IntPtr emuHandle, Rectangle bounder, double similarity = 0.8 )
         {
-            SaveScreenAs(ActualScreenPath, emuHandle, bounder);
+            SaveScreenAs(folder, ActualScreenPath, emuHandle, bounder);
+
+            string FullActual = ProperFolder(folder) + ProperName(ActualScreenPath);
+            string FullThis = ProperFolder(folder) + ProperName(thisPath);
 
             try { 
-                ComparableImage actualScreen = new ComparableImage(new FileInfo(ActualScreenPath));
-                ComparableImage thisScreen = new ComparableImage(new FileInfo(thisPath));
+                ComparableImage actualScreen = new ComparableImage(new FileInfo(FullActual));
+                ComparableImage thisScreen = new ComparableImage(new FileInfo(FullThis));
 
                 if (thisScreen.CalculateSimilarity(actualScreen) > similarity) return true;
             }
@@ -62,7 +65,7 @@ namespace BulletHellFish
             return false;
         }
 
-        public static bool StartScreenPresent(IntPtr emuHandle)
+        /*public static bool StartScreenPresent(IntPtr emuHandle)
         {
             SaveScreenAs(ActualScreenPath, emuHandle, NullRectangle);
             ComparableImage actualScreen = new ComparableImage(new FileInfo(ActualScreenPath));
@@ -73,19 +76,21 @@ namespace BulletHellFish
                 if (startScreen.CalculateSimilarity(actualScreen) > 0.9) return true;
             }
             return false;
-        }
+        }*/
 
-        internal static bool ThisScreenPresent(string v, IntPtr emuHandle, double similarity = 0.8)
+        internal static bool ThisScreenPresent(string folder, string thisPath, IntPtr emuHandle, double similarity = 0.8)
         {
-            return ThisScreenPresent(v, emuHandle, NullRectangle);
+            return ThisScreenPresent(folder, thisPath, emuHandle, NullRectangle);
         }
 
-        public static void SaveScreenAs(string path, IntPtr emuHandle) {
-            SaveScreenAs(path, emuHandle, NullRectangle);
+        public static void SaveScreenAs(string path, string name, IntPtr emuHandle) {
+            SaveScreenAs(path, name, emuHandle, NullRectangle);
         }
 
-        public static void SaveScreenAs(string path, IntPtr emuHandle, Rectangle bounder)
+        public static void SaveScreenAs(string folder, string name, IntPtr emuHandle, Rectangle bounder)
         {
+            name = ProperName(name);
+            folder = ProperFolder(folder);
 
             Rectangle bounds = RectByHandle(emuHandle);
             if (bounder == NullRectangle) {
@@ -106,8 +111,8 @@ namespace BulletHellFish
 
                 try
                 {
-                    if (File.Exists(path)) File.Delete(path);
-                    bitmap.Save(path, ImageFormat.Png);
+                    if (File.Exists(folder + name)) File.Delete(folder + name);
+                    bitmap.Save(folder + name, ImageFormat.Png);
                 }
 
 
@@ -116,34 +121,63 @@ namespace BulletHellFish
                 bitmap.Dispose();
             }
         }
-        public static string GenerateStartScreenPath()
+
+        private static string ProperFolder(string folder)
+        {
+            if (!Directory.Exists(folder))
+            {
+                folder = ".\\";
+            }
+
+            if (!folder.EndsWith("\\"))
+            {
+                folder += "\\";
+            }
+
+            return folder;
+        }
+
+        private static string ProperName(string name)
+        {
+            string[] splits = name.Split('.');
+
+            string nameonly = splits[0];
+            string extension = splits.Length > 1 ? splits[1] : EXT;
+
+            return nameonly + "."+extension;
+        }
+
+        public static string GenerateScreenPath(string folder, string basename)
         {
             int count = 1;
+            string propername = ProperName(basename);
 
-            string fileNameOnly = Path.GetFileNameWithoutExtension(StartScreenPath);
-            string extension = Path.GetExtension(StartScreenPath);
-            string path = Path.GetDirectoryName(StartScreenPath);
-            string newFullPath = StartScreenPath;
+            string fileNameOnly = Path.GetFileNameWithoutExtension(propername);
+            string extension = Path.GetExtension(propername);
+            string path = ProperFolder(folder);
 
-            while (System.IO.File.Exists(newFullPath))
+            while (File.Exists(path + propername))
             {
                 string tempFileName = string.Format("{0}_{1}", fileNameOnly, count++);
-                newFullPath = Path.Combine(path, tempFileName + extension);
+                propername = ProperName(tempFileName + extension);
             }
-            return newFullPath;
+            return propername;
         }
 
 
-        private static string[] EveryStartScreen()
+        private static string[] EveryScreenNamed(string folder, string basename)
         {
-            string rootFolderPath = "./";
-            string filesToDelete = "start_screen*.jpg";
-            return Directory.GetFiles(rootFolderPath, filesToDelete);
+            string[] splits = ProperName(basename).Split('.');
+
+            string nameonly = splits[0];
+            string extension = splits.Length > 1 ? splits[1] : EXT;
+            string filesToDelete = nameonly + "*."+ extension;
+            return Directory.GetFiles(ProperFolder(folder), filesToDelete);
         }
 
-        internal static void CleanStartScreens()
+        internal static void ClearScreens(string folder, string basename)
         {
-            foreach (string file in EveryStartScreen())
+            foreach (string file in EveryScreenNamed(folder, basename))
             {
                 File.Delete(file);
             }

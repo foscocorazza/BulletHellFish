@@ -10,11 +10,14 @@ namespace BulletHellFish
 {
     public abstract class Behavior
     {
+        protected static readonly string EXT = ".png";
         protected InputBoard inputBoard;
         protected int tick = 0;
         protected int waitCycle = 0;
         protected IntPtr emuHandle;
 
+
+        protected string folder = "./";
         private static bool locked = false;
 
         protected Behavior(int waitCycle, IntPtr emuHandle)
@@ -56,8 +59,7 @@ namespace BulletHellFish
         {
             this.inputBoard = inputBoard;
         }
-
-
+        
 
         public void Wait(int ms) {
             Thread.Sleep(ms);
@@ -65,27 +67,32 @@ namespace BulletHellFish
 
         public void Press(string displayName)
         {
-            inputBoard.Press(displayName, 200, 200);
+            inputBoard.Press(displayName, 200, 200, Hand.Left);
         }
 
 
         public bool IsSimilarTo(string path, System.Drawing.Rectangle rectangle) {
-            return ScreenshotManager.ThisScreenPresent(path+".jpg", emuHandle, rectangle);
+            return ScreenshotManager.ThisScreenPresent(folder, path + EXT, emuHandle, rectangle);
         }
 
         public bool IsSimilarTo(string path)
         {
-            return ScreenshotManager.ThisScreenPresent(path + ".jpg", emuHandle);
+            return ScreenshotManager.ThisScreenPresent(folder, path + EXT, emuHandle);
         }
 
         public bool IsSimilarTo(string path, System.Drawing.Rectangle rectangle, float similarity)
         {
-            return ScreenshotManager.ThisScreenPresent(path + ".jpg", emuHandle, rectangle, similarity);
+            return ScreenshotManager.ThisScreenPresent(folder, path + EXT, emuHandle, rectangle, similarity);
         }
 
         public bool IsSimilarTo(string path, float similarity)
         {
-            return ScreenshotManager.ThisScreenPresent(path + ".jpg", emuHandle, similarity);
+            return ScreenshotManager.ThisScreenPresent(folder, path + EXT, emuHandle, similarity);
+        }
+
+        public void SetFolder(string folder)
+        {
+            this.folder = folder;
         }
         
     }
@@ -98,11 +105,11 @@ namespace BulletHellFish
         public override bool behave() {
             if (skip()) return false;
 
-            if (ScreenshotManager.StartScreenPresent(emuHandle))
+           /* if (ScreenshotManager.StartScreenPresent(emuHandle))
             {
                 inputBoard.PressStart();
                 return true;
-            }
+            }*/
             return false;
         }
     }
@@ -119,7 +126,7 @@ namespace BulletHellFish
         {
             if (IsLocked()) return false;
 
-            if (ScreenshotManager.ThisScreenPresent("continue_screen.jpg", emuHandle, new System.Drawing.Rectangle( 117 , 229 , 343 , 35)))
+            if (ScreenshotManager.ThisScreenPresent(folder, "continue_screen"+ EXT, emuHandle, new System.Drawing.Rectangle( 117 , 229 , 343 , 35)))
             {
                 if (!lastFrameWasContinue) {
                     Continues++;
@@ -146,8 +153,8 @@ namespace BulletHellFish
         {
             if (IsLocked()) return false;
 
-            bool VictoryScreen = ScreenshotManager.ThisScreenPresent("victory_screen.jpg", emuHandle, new System.Drawing.Rectangle(77, 620, 1253, 116));
-            bool DrawScreen = ScreenshotManager.ThisScreenPresent("draw_screen.jpg", emuHandle, new System.Drawing.Rectangle(510, 624, 383, 106));
+            bool VictoryScreen = ScreenshotManager.ThisScreenPresent(folder, "victory_screen"+ EXT, emuHandle, new System.Drawing.Rectangle(77, 620, 1253, 116));
+            bool DrawScreen = ScreenshotManager.ThisScreenPresent(folder, "draw_screen" + EXT, emuHandle, new System.Drawing.Rectangle(510, 624, 383, 106));
 
             if (VictoryScreen || DrawScreen)
             {
@@ -190,8 +197,8 @@ namespace BulletHellFish
         {
             if (IsLocked()) return false;
 
-            bool isTitleScreen = ScreenshotManager.ThisScreenPresent("title_screen.jpg", emuHandle,  0.95);
-            bool isSelectScreen = ScreenshotManager.ThisScreenPresent("select_screen.jpg", emuHandle, 0.75);
+            bool isTitleScreen = ScreenshotManager.ThisScreenPresent(folder, "title_screen"+ EXT, emuHandle,  0.95);
+            bool isSelectScreen = ScreenshotManager.ThisScreenPresent(folder, "select_screen"+ EXT, emuHandle, 0.75);
 
 
             if (isTitleScreen)
@@ -208,7 +215,7 @@ namespace BulletHellFish
                 {
                     tries--;
                     Thread.Sleep(1000);
-                    isSelectScreen = ScreenshotManager.ThisScreenPresent("select_screen.jpg", emuHandle);
+                    isSelectScreen = ScreenshotManager.ThisScreenPresent(folder, "select_screen"+ EXT, emuHandle);
                 } while (!isSelectScreen && tries > 0);
 
                 if (tries <= 0) {
@@ -221,7 +228,7 @@ namespace BulletHellFish
                 int hitLeft = r.Next(0, 10);
                 for (int i = 0; i < hitLeft; i++)
                 {
-                    inputBoard.Press(InputBoard.RIGHT, 150, 150);
+                    inputBoard.Press(InputBoard.RIGHT, 150, 150, Hand.Left);
                     Thread.Sleep(100);
 
                 }
