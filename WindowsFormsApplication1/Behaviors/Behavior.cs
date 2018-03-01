@@ -82,12 +82,18 @@ namespace BulletHellFish
 
         public bool IsSimilarTo(string path, System.Drawing.Rectangle rectangle, float similarity)
         {
-            return ScreenshotManager.ThisScreenPresent(folder, path + EXT, emuHandle, rectangle, similarity);
+            if(similarity > 0)
+                return ScreenshotManager.ThisScreenPresent(folder, path + EXT, emuHandle, rectangle, similarity);
+            else
+                return ScreenshotManager.ThisScreenPresent(folder, path + EXT, emuHandle, rectangle);
         }
 
         public bool IsSimilarTo(string path, float similarity)
         {
-            return ScreenshotManager.ThisScreenPresent(folder, path + EXT, emuHandle, similarity);
+            if (similarity > 0)
+                return ScreenshotManager.ThisScreenPresent(folder, path + EXT, emuHandle, similarity);
+            else
+                return ScreenshotManager.ThisScreenPresent(folder, path + EXT, emuHandle);
         }
 
         public void SetFolder(string folder)
@@ -97,7 +103,7 @@ namespace BulletHellFish
         
     }
 
-    public class PressStartAtTitleScreenBehavior : Behavior
+  /*  public class PressStartAtTitleScreenBehavior : Behavior
     {
         public PressStartAtTitleScreenBehavior(IntPtr emuHandle) : base(10, emuHandle)
         {}
@@ -105,11 +111,11 @@ namespace BulletHellFish
         public override bool behave() {
             if (skip()) return false;
 
-           /* if (ScreenshotManager.StartScreenPresent(emuHandle))
+           if (ScreenshotManager.StartScreenPresent(emuHandle))
             {
                 inputBoard.PressStart();
                 return true;
-            }*/
+            }
             return false;
         }
     }
@@ -242,7 +248,7 @@ namespace BulletHellFish
             lastFrameWasArcade = false;
             return false;
         }
-    }
+    }*/
 
     public class FileInterpretedBehavior : Behavior
     {

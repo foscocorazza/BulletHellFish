@@ -1,0 +1,6 @@
+﻿if "start_to_continue_screen" 98% similar in 2 743 1026 50
+	lock input
+		press START
+		wait 500 ms
+	unlock input
+	

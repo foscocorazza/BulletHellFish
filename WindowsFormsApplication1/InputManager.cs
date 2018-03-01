@@ -49,6 +49,15 @@ namespace BulletHellFish
         public const string DOWN    = "⇩";
         public const string RIGHT   = "⇨";
         public const string LEFT    = "⇦";
+
+        internal void LiftAll()
+        {
+           foreach(KeyValuePair<string, VirtualKeyCode> key in keys)
+            {
+                SendInputWrapper.Lift(key.Value, SendWithDirectX);
+            }
+        }
+
         public const string NONE    = "NONE";
 
         protected InputBoard(string FilePath)
@@ -155,13 +164,13 @@ namespace BulletHellFish
             return leftInputs.Contains(value);
         }
 
-
+/*
         public void PressStart()
         {
             Press(START, 150, 150, Hand.Left);
         }
 
-        public abstract void PressConfirm();
+        public abstract void PressConfirm();*/
         
 
         public void Press(string key, int minHoldTime, int maxHoldTime, Hand hand)
@@ -376,11 +385,11 @@ namespace BulletHellFish
         
         public PSXInputBoard(string FilePath) : base(FilePath) {}
 
-
+        /*
         public override void PressConfirm()
         {
             Press("X", 150, 150, Hand.Right);
-        }
+        }*/
 
     }
     

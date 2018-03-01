@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -171,19 +172,6 @@ namespace BulletHellFish
 
         }
 
-        private void OnInputSourceBrowseClick(object sender, EventArgs e)
-        {
-            OpenFileDialog.Multiselect = false;
-            OpenFileDialog.CheckFileExists = true;
-            OpenFileDialog.Filter = "Comma Separated Values (*.csv)|*.csv";
-
-            if (OpenFileDialog.ShowDialog() == DialogResult.OK)
-            {
-                InputSourceTextBox.Text = OpenFileDialog.FileName;
-                Form.LoadChart();
-            }
-
-        }
 
         private void OnInputSourceTextValueChanged(object sender, EventArgs e)
         {
@@ -195,14 +183,19 @@ namespace BulletHellFish
             Form.LoadChart();
         }
 
+        private void OnInputSourceBrowseClick(object sender, EventArgs e)
+        {
+            if (OnFileSelected("Comma Separated Values (*.csv)|*.csv"))
+            {
+                InputSourceTextBox.Text = OpenFileDialog.FileName;
+                Form.LoadChart();
+            }
+
+        }
 
         private void OnMappingBrowseClick(object sender, EventArgs e)
         {
-            OpenFileDialog.Multiselect = false;
-            OpenFileDialog.CheckFileExists = true;
-            OpenFileDialog.Filter = "Comma Separated Values (*.csv)|*.csv";
-
-            if (OpenFileDialog.ShowDialog() == DialogResult.OK)
+            if (OnFileSelected("Comma Separated Values (*.csv)|*.csv"))
             {
                 MappingTextBox.Text = OpenFileDialog.FileName;
                 InitPlayer(player);
@@ -213,16 +206,24 @@ namespace BulletHellFish
 
         private void OnBehaviorsBrowseClick(object sender, EventArgs e)
         {
-            OpenFileDialog.Multiselect = false;
-            OpenFileDialog.CheckFileExists = true;
-            OpenFileDialog.Filter = "BulletHellFish Behaviors (*.bhf)|*.bhf";
-
-            if (OpenFileDialog.ShowDialog() == DialogResult.OK)
+            if (OnFileSelected("BulletHellFish Behaviors (*.bhf)|*.bhf"))
             {
                 BehaviorTextBox.Text = OpenFileDialog.FileName;
                 InitPlayer(player);
             }
         }
+
+
+        private bool OnFileSelected(string filter)
+        {
+            OpenFileDialog.Multiselect = false;
+            OpenFileDialog.CheckFileExists = true;
+            OpenFileDialog.Filter = filter;
+            string CombinedPath = Path.Combine(Directory.GetCurrentDirectory(), "..\\..\\..");
+            OpenFileDialog.InitialDirectory = CombinedPath;
+
+            return OpenFileDialog.ShowDialog() == DialogResult.OK;
+       }
 
         #endregion
 
@@ -251,12 +252,27 @@ namespace BulletHellFish
         {
             player.InputBoard.ClearBehaviors();
 
-            // TODO: BehaviorTextBox.Text can be both a directory or a file;
-            if (!string.IsNullOrWhiteSpace(BehaviorTextBox.Text))
+            string path = BehaviorTextBox.Text;
+            if (!string.IsNullOrWhiteSpace(path))
             {
-                Behavior behavior = new FileInterpretedBehavior(BehaviorTextBox.Text, GameWindowHandle);
-                behavior.SetFolder(saveScreenShotPath);
-                player.InputBoard.AddBehavior(behavior);
+                string[] behaviorsPaths = new string[] { };
+                if (File.Exists(path))
+                {
+                    behaviorsPaths = new string[]{ path };
+                }
+                else if (Directory.Exists(path))
+                {
+                    behaviorsPaths = Directory.GetFiles(path, "*.bhf");
+                } else {
+                    MessageBox.Show("Behavior not found", "Behavior file or directory '" + path + "' not found.", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                    return;
+                }
+
+                foreach(string behaviorPath in behaviorsPaths) { 
+                    Behavior behavior = new FileInterpretedBehavior(behaviorPath, GameWindowHandle);
+                    behavior.SetFolder(saveScreenShotPath);
+                    player.InputBoard.AddBehavior(behavior);
+                }
             }
         }
 

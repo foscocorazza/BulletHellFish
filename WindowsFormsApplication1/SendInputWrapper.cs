@@ -12,6 +12,20 @@ namespace BulletHellFish
         [DllImport("user32.dll")]
         static extern int SendInput(int nInputs, [MarshalAs(UnmanagedType.LPArray, SizeConst = 1)] INPUT[] pInputs, int cbSize);
 
+
+        public static void Lift(VirtualKeyCode key, bool sendWithDirectX)
+        {
+            if (sendWithDirectX)
+            {
+                SendDirectXKey(GetScanCode(key), (int)KeyFlag.ScanCode | (int)KeyFlag.KeyUp);
+            }
+            else
+            {
+                InputSimulator.SimulateKeyUp(key);
+            }
+        }
+
+
         public static void PressCombo(VirtualKeyCode[] combo, int minHoldTime, int maxHoldTime, bool sendWithDirectX, Random r)
         {
 

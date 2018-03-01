@@ -13,6 +13,7 @@ namespace BulletHellFish
         VariablesStack vars = new VariablesStack();
         Behavior behavior;
         string[] program;
+        bool behaved = false;
 
         public BehaviorInterpreter(Behavior behavior, string[] program)
         {
@@ -47,7 +48,7 @@ namespace BulletHellFish
 
             }
 
-            return true;
+            return behaved;
 
         }
         
@@ -419,25 +420,44 @@ namespace BulletHellFish
                 Error();
                 return false;
             } else {
-                string image = EvaluateAsString(new string[]{ Trim(fields[0]) });
 
+                string[] first = TrimSplit(fields[0]);
+                if (first.Length == 0) {
+                    Error();
+                    return false;
+                }
+                string image = EvaluateAsString(new string[] { Trim(first[0]) });
+                
+                float percentage = -1;
+                if (first.Length > 1)
+                {
+                    // Then there is percentage as well
+                    string pline = Trim(first[1]).Replace("%", "");
+                    percentage = EvaluateAsInt(new string[] { pline });
+                    percentage = ((float)percentage) / 100.0f;
+                }
+                
                 if (fields.Length == 1)
                 {
                     // Done! Just give the image to the behavior!
-                    return behavior.IsSimilarTo(image);
+                    return behavior.IsSimilarTo(image, percentage);
                 }
-                else if (fields.Length == 2) {
+                else if (fields.Length == 2)
+                {
                     string second = Trim(fields[1]);
+
                     if (StartsWithOneOf(second, Keywords.InAt))
                     {
+
+                        
                         // Then program, asks for rectangle.
                         System.Drawing.Rectangle rect = GetRect(RemoveFirst(TrimSplit(second)));
-                        return behavior.IsSimilarTo(image, rect);
+                        return behavior.IsSimilarTo(image, rect, percentage);
                     }
                     else {
                         // probably percentage, but for now:
 
-                        return behavior.IsSimilarTo(image);
+                        return behavior.IsSimilarTo(image, percentage);
 
                     }
 

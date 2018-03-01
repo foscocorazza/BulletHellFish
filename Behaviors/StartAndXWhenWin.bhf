@@ -1,4 +1,4 @@
-﻿bool victoryScreen = "victory_screen" similar in 57 460 917 80
+﻿bool victoryScreen = "victory_screen" similar in 53 460 924 78
 bool drawScreen = "draw_screen" similar in 510 624 383 106
 
 if victoryScreen or drawScreen

@@ -334,5 +334,11 @@ namespace BulletHellFish
 
         #endregion
 
+        private void LiftButton_Click(object sender, EventArgs e)
+        {
+            SetForegroundWindow(GameEmuHandle);
+            player1.InputBoard.LiftAll();
+            player2.InputBoard.LiftAll();
+        }
     }
 }
